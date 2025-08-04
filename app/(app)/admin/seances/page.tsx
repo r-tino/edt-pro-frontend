@@ -65,7 +65,58 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-// SUPPRIMÉ enum Jour et toute logique associée
+
+// ------------------------------------------------------
+// AJOUT : Fonction de détection de conflit en haut du fichier
+// ------------------------------------------------------
+function detectSeanceConflicts(
+  nouvelleSeance: {
+    salleId: string;
+    enseignantId: string;
+    date: string;
+    heureDebut: string;
+    heureFin: string;
+    anneeScolaire?: string;
+    semestre?: string | null;
+  },
+  seances: any[],
+  editId?: string // optionnel en cas d'édition
+) {
+  let salle = null;
+  let enseignant = null;
+  let anyConflict = false;
+
+  for (const seance of seances) {
+    if (editId && seance.id === editId) continue;
+    if (seance.date !== nouvelleSeance.date) continue;
+    if (
+      (nouvelleSeance.anneeScolaire && seance.anneeScolaire && seance.anneeScolaire !== nouvelleSeance.anneeScolaire) ||
+      (nouvelleSeance.semestre && seance.semestre && seance.semestre !== nouvelleSeance.semestre)
+    )
+      continue;
+
+    const debutN = nouvelleSeance.heureDebut;
+    const finN = nouvelleSeance.heureFin;
+    const debutS = seance.heureDebut;
+    const finS = seance.heureFin;
+
+    // Chevauchement d'horaires
+    const chevauchement = debutN < finS && finN > debutS;
+
+    if (chevauchement) {
+      if (seance.salleId === nouvelleSeance.salleId) {
+        salle = `Salle occupée par ${seance.matiere.nom} avec ${seance.enseignant.utilisateur.nom} de ${debutS} à ${finS}`;
+        anyConflict = true;
+      }
+      if (seance.enseignantId === nouvelleSeance.enseignantId) {
+        enseignant = `Enseignant indisponible (déjà en ${seance.salle.nom} pour ${seance.matiere.nom} de ${debutS} à ${finS})`;
+        anyConflict = true;
+      }
+    }
+  }
+
+  return { salle, enseignant, anyConflict };
+}
 
 enum Role {
   ADMIN = "ADMIN",
@@ -625,6 +676,27 @@ export default function AdminSeancesPage() {
       return;
     }
 
+    // -----> Vérification des conflits côté frontend
+    const conflits = detectSeanceConflicts(
+      {
+        salleId: values.salleId,
+        enseignantId: values.enseignantId,
+        date: values.date,
+        heureDebut: values.heureDebut,
+        heureFin: values.heureFin,
+        anneeScolaire: values.anneeScolaire,
+        semestre: values.semestre ?? null,
+      },
+      seances
+    );
+
+    if (conflits.anyConflict) {
+      if (conflits.salle) toast.error(conflits.salle);
+      if (conflits.enseignant) toast.error(conflits.enseignant);
+      setSubmitLoading(false);
+      return;
+    }
+
     try {
       const payload = {
         ...values,
@@ -673,6 +745,28 @@ export default function AdminSeancesPage() {
       return;
     }
 
+    // -----> Vérification des conflits côté frontend (exclut la séance éditée)
+    const conflits = detectSeanceConflicts(
+    {
+      salleId: values.salleId ?? "",
+      enseignantId: values.enseignantId ?? "",
+      date: values.date ?? "",
+      heureDebut: values.heureDebut ?? "",
+      heureFin: values.heureFin ?? "",
+      anneeScolaire: values.anneeScolaire ?? "",
+      semestre: values.semestre ?? null,
+    },
+      seances,
+      selectedSeance?.id // dans le cas de l'édition
+    );
+
+    if (conflits.anyConflict) {
+      if (conflits.salle) toast.error(conflits.salle);
+      if (conflits.enseignant) toast.error(conflits.enseignant);
+      setSubmitLoading(false);
+      return;
+    }
+    
     try {
       const payload = {
         ...values,
