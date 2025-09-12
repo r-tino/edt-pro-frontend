@@ -244,7 +244,7 @@ export default function UsersPage() {
   // Fonctions pour récupérer les données nécessaires
   const fetchNiveaux = useCallback(async (accessToken: string) => {
     try {
-      const response = await fetch("http://localhost:3000/niveaux", {
+      const response = await fetch("http://localhost:3000/api/niveaux", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -265,7 +265,7 @@ export default function UsersPage() {
 
   const fetchMatieres = useCallback(async (accessToken: string) => {
     try {
-      const response = await fetch("http://localhost:3000/matieres", {
+      const response = await fetch("http://localhost:3000/api/matieres", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -304,7 +304,7 @@ export default function UsersPage() {
     await Promise.all([fetchNiveaux(accessToken), fetchMatieres(accessToken)])
 
     try {
-      const response = await fetch("http://localhost:3000/utilisateurs", {
+      const response = await fetch("http://localhost:3000/api/utilisateurs", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -462,8 +462,8 @@ export default function UsersPage() {
     const accessToken = localStorage.getItem("accessToken")
     const method = currentUser ? "PATCH" : "POST"
     const url = currentUser
-      ? `http://localhost:3000/utilisateurs/${currentUser.id}`
-      : "http://localhost:3000/auth/register"
+      ? `http://localhost:3000/api/utilisateurs/${currentUser.id}`
+      : "http://localhost:3000/api/auth/register"
 
     const payload: any = {
       nom: newUserName,
@@ -540,7 +540,7 @@ export default function UsersPage() {
     const accessToken = localStorage.getItem("accessToken")
 
     try {
-      const response = await fetch(`http://localhost:3000/utilisateurs/${userToDeleteId}`, {
+      const response = await fetch(`http://localhost:3000/api/utilisateurs/${userToDeleteId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,

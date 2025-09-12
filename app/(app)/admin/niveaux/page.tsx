@@ -220,7 +220,7 @@ export default function NiveauxPage() {
   // Fonctions pour récupérer les départements et les niveaux
   const fetchDepartements = useCallback(async (accessToken: string) => {
     try {
-      const response = await fetch("http://localhost:3000/departements", {
+      const response = await fetch("http://localhost:3000/api/departements", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -258,7 +258,7 @@ export default function NiveauxPage() {
     await fetchDepartements(accessToken)
 
     try {
-      const response = await fetch("http://localhost:3000/niveaux", {
+      const response = await fetch("http://localhost:3000/api/niveaux", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -339,7 +339,7 @@ export default function NiveauxPage() {
     setIsSubmitting(true)
     const accessToken = localStorage.getItem("accessToken")
     const method = currentNiveau ? "PATCH" : "POST"
-    const url = currentNiveau ? `http://localhost:3000/niveaux/${currentNiveau.id}` : "http://localhost:3000/niveaux"
+    const url = currentNiveau ? `http://localhost:3000/api/niveaux/${currentNiveau.id}` : "http://localhost:3000/api/niveaux"
 
     try {
       const response = await fetch(url, {
@@ -379,7 +379,7 @@ export default function NiveauxPage() {
     const accessToken = localStorage.getItem("accessToken")
 
     try {
-      const response = await fetch(`http://localhost:3000/niveaux/${niveauToDeleteId}`, {
+      const response = await fetch(`http://localhost:3000/api/niveaux/${niveauToDeleteId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,

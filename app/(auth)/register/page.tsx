@@ -179,8 +179,8 @@ export default function RegisterPage() {
     async function fetchData() {
       setIsDataLoading(true);
       try {
-        const niveauxRes = await fetch("http://localhost:3000/niveaux");
-        const matieresRes = await fetch("http://localhost:3000/matieres");
+        const niveauxRes = await fetch("http://localhost:3000/api/niveaux");
+        const matieresRes = await fetch("http://localhost:3000/api/matieres");
 
         if (!niveauxRes.ok) {
           const errorData = await niveauxRes.json();
@@ -290,7 +290,7 @@ export default function RegisterPage() {
       delete payload.enseignantProfile;
     }
 
-    const response = await fetch("http://localhost:3000/auth/register", {
+    const response = await fetch("http://localhost:3000/api/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -370,13 +370,13 @@ export default function AdminSeancesPage() {
         sallesRes,
         relationsRes,
       ] = await Promise.all([
-        fetch("http://localhost:3000/niveaux", { headers }),
-        fetch("http://localhost:3000/utilisateurs?role=ENSEIGNANT", {
+        fetch("http://localhost:3000/api/niveaux", { headers }),
+        fetch("http://localhost:3000/api/utilisateurs?role=ENSEIGNANT", {
           headers,
         }),
-        fetch("http://localhost:3000/matieres", { headers }),
-        fetch("http://localhost:3000/salles", { headers }),
-        fetch("http://localhost:3000/enseignant-matiere", { headers }),
+        fetch("http://localhost:3000/api/matieres", { headers }),
+        fetch("http://localhost:3000/api/salles", { headers }),
+        fetch("http://localhost:3000/api/enseignant-matiere", { headers }),
       ]);
 
       const niveauxData = await niveauxRes.json();
@@ -440,7 +440,7 @@ export default function AdminSeancesPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/seances?${queryParams.toString()}`,
+        `http://localhost:3000/api/seances?${queryParams.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -703,7 +703,7 @@ export default function AdminSeancesPage() {
         semestre: values.semestre === "" ? null : values.semestre,
       };
 
-      const response = await fetch("http://localhost:3000/seances", {
+      const response = await fetch("http://localhost:3000/api/seances", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -774,7 +774,7 @@ export default function AdminSeancesPage() {
       };
 
       const response = await fetch(
-        `http://localhost:3000/seances/${selectedSeance.id}`,
+        `http://localhost:3000/api/seances/${selectedSeance.id}`,
         {
           method: "PATCH",
           headers: {
@@ -820,7 +820,7 @@ export default function AdminSeancesPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/seances/${selectedSeance.id}`,
+        `http://localhost:3000/api/seances/${selectedSeance.id}`,
         {
           method: "DELETE",
           headers: {

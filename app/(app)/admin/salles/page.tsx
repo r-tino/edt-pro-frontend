@@ -220,7 +220,7 @@ export default function SallesPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/salles", {
+      const response = await fetch("http://localhost:3000/api/salles", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -308,7 +308,7 @@ export default function SallesPage() {
     setIsSubmitting(true)
     const accessToken = localStorage.getItem("accessToken")
     const method = currentSalle ? "PATCH" : "POST"
-    const url = currentSalle ? `http://localhost:3000/salles/${currentSalle.id}` : "http://localhost:3000/salles"
+    const url = currentSalle ? `http://localhost:3000/api/salles/${currentSalle.id}` : "http://localhost:3000/api/salles"
 
     try {
       const response = await fetch(url, {
@@ -352,7 +352,7 @@ export default function SallesPage() {
     const accessToken = localStorage.getItem("accessToken")
 
     try {
-      const response = await fetch(`http://localhost:3000/salles/${salleToDeleteId}`, {
+      const response = await fetch(`http://localhost:3000/api/salles/${salleToDeleteId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,

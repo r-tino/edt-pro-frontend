@@ -219,7 +219,7 @@ export default function MatieresPage() {
   // Fonctions pour récupérer les niveaux et les matières
   const fetchNiveaux = useCallback(async (accessToken: string) => {
     try {
-      const response = await fetch("http://localhost:3000/niveaux", {
+      const response = await fetch("http://localhost:3000/api/niveaux", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -257,7 +257,7 @@ export default function MatieresPage() {
     await fetchNiveaux(accessToken)
 
     try {
-      const response = await fetch("http://localhost:3000/matieres", {
+      const response = await fetch("http://localhost:3000/api/matieres", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -338,7 +338,7 @@ export default function MatieresPage() {
     setIsSubmitting(true)
     const accessToken = localStorage.getItem("accessToken")
     const method = currentMatiere ? "PATCH" : "POST"
-    const url = currentMatiere ? `http://localhost:3000/matieres/${currentMatiere.id}` : "http://localhost:3000/matieres"
+    const url = currentMatiere ? `http://localhost:3000/api/matieres/${currentMatiere.id}` : "http://localhost:3000/api/matieres"
 
     try {
       const response = await fetch(url, {
@@ -378,7 +378,7 @@ export default function MatieresPage() {
     const accessToken = localStorage.getItem("accessToken")
 
     try {
-      const response = await fetch(`http://localhost:3000/matieres/${matiereToDeleteId}`, {
+      const response = await fetch(`http://localhost:3000/api/matieres/${matiereToDeleteId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,

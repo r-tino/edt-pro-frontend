@@ -221,7 +221,7 @@ export default function DepartementsPage() {
       // Pour inclure les comptes (_count) des relations, votre API NestJS doit utiliser
       // Prisma avec l'option `_count: { select: { niveaux: true, enseignants: true } }`
       // dans la requête FIND pour les départements.
-      const response = await fetch("http://localhost:3000/departements", {
+      const response = await fetch("http://localhost:3000/api/departements", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -293,8 +293,8 @@ export default function DepartementsPage() {
     const accessToken = localStorage.getItem("accessToken")
     const method = currentDepartement ? "PATCH" : "POST"
     const url = currentDepartement
-      ? `http://localhost:3000/departements/${currentDepartement.id}`
-      : "http://localhost:3000/departements"
+      ? `http://localhost:3000/api/departements/${currentDepartement.id}`
+      : "http://localhost:3000/api/departements"
 
     try {
       const response = await fetch(url, {
@@ -338,7 +338,7 @@ export default function DepartementsPage() {
     const accessToken = localStorage.getItem("accessToken")
 
     try {
-      const response = await fetch(`http://localhost:3000/departements/${departementToDeleteId}`, {
+      const response = await fetch(`http://localhost:3000/api/departements/${departementToDeleteId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,
