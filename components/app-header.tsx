@@ -2,7 +2,6 @@
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import {
   CalendarCheck,
   LogOut,
@@ -23,18 +22,9 @@ interface AppHeaderProps {
     nom: string
     email: string
     role: string
-    photo?: string
   }
   onLogout: () => void
   currentPage?: string
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
-
-const getImageUrl = (imagePath: string) => {
-  if (!imagePath) return null
-  if (imagePath.startsWith("http")) return imagePath
-  return `${API_URL}/${imagePath}`
 }
 
 /**
@@ -207,21 +197,7 @@ export function AppHeader({ user, onLogout, currentPage }: AppHeaderProps) {
                 transition={{ type: "spring", stiffness: 300 }}
               >
                 <Avatar className="h-10 w-10 ring-2 ring-blue-200 ring-offset-2">
-                  {user.photo && getImageUrl(user.photo) ? (
-                    <Image
-                      src={getImageUrl(user.photo)! || "/placeholder.svg"}
-                      alt={user.nom}
-                      width={40}
-                      height={40}
-                      className="rounded-full object-cover"
-                      onError={(e) => {
-                        console.log("[v0] Error loading profile image:", user.photo)
-                        e.currentTarget.style.display = "none"
-                      }}
-                    />
-                  ) : (
-                    <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user.nom}`} alt={user.nom} />
-                  )}
+                  <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user.nom}`} alt={user.nom} />
                   <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white font-semibold">
                     {user.nom.charAt(0).toUpperCase()}
                   </AvatarFallback>
