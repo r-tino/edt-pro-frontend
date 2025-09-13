@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   CalendarCheck,
   PlusCircle,
@@ -20,104 +20,71 @@ import {
   GraduationCap,
   Sparkles,
   Search,
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { toast } from "sonner";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+} from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { toast } from "sonner"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
-
 
 // ------------------------------------------------------
 // AJOUT : Fonction de détection de conflit en haut du fichier
 // ------------------------------------------------------
 function detectSeanceConflicts(
   nouvelleSeance: {
-    salleId: string;
-    enseignantId: string;
-    date: string;
-    heureDebut: string;
-    heureFin: string;
-    anneeScolaire?: string;
-    semestre?: string | null;
+    salleId: string
+    enseignantId: string
+    date: string
+    heureDebut: string
+    heureFin: string
+    anneeScolaire?: string
+    semestre?: string | null
   },
   seances: any[],
-  editId?: string // optionnel en cas d'édition
+  editId?: string, // optionnel en cas d'édition
 ) {
-  let salle = null;
-  let enseignant = null;
-  let anyConflict = false;
+  let salle = null
+  let enseignant = null
+  let anyConflict = false
 
   for (const seance of seances) {
-    if (editId && seance.id === editId) continue;
-    if (seance.date !== nouvelleSeance.date) continue;
+    if (editId && seance.id === editId) continue
+    if (seance.date !== nouvelleSeance.date) continue
     if (
       (nouvelleSeance.anneeScolaire && seance.anneeScolaire && seance.anneeScolaire !== nouvelleSeance.anneeScolaire) ||
       (nouvelleSeance.semestre && seance.semestre && seance.semestre !== nouvelleSeance.semestre)
     )
-      continue;
+      continue
 
-    const debutN = nouvelleSeance.heureDebut;
-    const finN = nouvelleSeance.heureFin;
-    const debutS = seance.heureDebut;
-    const finS = seance.heureFin;
+    const debutN = nouvelleSeance.heureDebut
+    const finN = nouvelleSeance.heureFin
+    const debutS = seance.heureDebut
+    const finS = seance.heureFin
 
     // Chevauchement d'horaires
-    const chevauchement = debutN < finS && finN > debutS;
+    const chevauchement = debutN < finS && finN > debutS
 
     if (chevauchement) {
       if (seance.salleId === nouvelleSeance.salleId) {
-        salle = `Salle occupée par ${seance.matiere.nom} avec ${seance.enseignant.utilisateur.nom} de ${debutS} à ${finS}`;
-        anyConflict = true;
+        salle = `Salle occupée par ${seance.matiere.nom} avec ${seance.enseignant.utilisateur.nom} de ${debutS} à ${finS}`
+        anyConflict = true
       }
       if (seance.enseignantId === nouvelleSeance.enseignantId) {
-        enseignant = `Enseignant indisponible (déjà en ${seance.salle.nom} pour ${seance.matiere.nom} de ${debutS} à ${finS})`;
-        anyConflict = true;
+        enseignant = `Enseignant indisponible (déjà en ${seance.salle.nom} pour ${seance.matiere.nom} de ${debutS} à ${finS})`
+        anyConflict = true
       }
     }
   }
 
-  return { salle, enseignant, anyConflict };
+  return { salle, enseignant, anyConflict }
 }
 
 enum Role {
@@ -127,185 +94,151 @@ enum Role {
 }
 
 interface Niveau {
-  id: string;
-  nom: string;
+  id: string
+  nom: string
   departement: {
-    id: string;
-    nom: string;
-  };
+    id: string
+    nom: string
+  }
 }
 
 interface EnseignantOption {
-  id: string;
-  nom: string;
+  id: string
+  nom: string
 }
 
 interface Matiere {
-  id: string;
-  nom: string;
+  id: string
+  nom: string
   niveau: {
-    id: string;
-    nom: string;
-  };
+    id: string
+    nom: string
+  }
 }
 
 interface Salle {
-  id: string;
-  nom: string;
-  capacite: number;
+  id: string
+  nom: string
+  capacite: number
 }
 
 interface EnseignantMatiereRelation {
-  enseignantId: string;
-  matiereId: string;
+  enseignantId: string
+  matiereId: string
 }
 
 interface Seance {
-  id: string;
-  niveauId: string;
-  enseignantId: string;
-  matiereId: string;
-  salleId: string;
-  date: string; // YYYY-MM-DD
-  heureDebut: string;
-  heureFin: string;
-  anneeScolaire: string;
-  semestre: string | null;
-  niveau: { id: string; nom: string; departement: { id: string; nom: string } };
-  enseignant: { id: string; utilisateur: { id: string; nom: string } };
-  matiere: { id: string; nom: string; niveau: { id: string; nom: string } };
-  salle: { id: string; nom: string; capacite: number };
+  id: string
+  niveauId: string
+  enseignantId: string
+  matiereId: string
+  salleId: string
+  date: string // YYYY-MM-DD
+  heureDebut: string
+  heureFin: string
+  anneeScolaire: string
+  semestre: string | null
+  niveau: { id: string; nom: string; departement: { id: string; nom: string } }
+  enseignant: { id: string; utilisateur: { id: string; nom: string } }
+  matiere: { id: string; nom: string; niveau: { id: string; nom: string } }
+  salle: { id: string; nom: string; capacite: number }
 }
 
 // ZOD : SUPPRIMER jour
 const seanceSchemaBaseObject = z.object({
-  niveauId: z
-    .string()
-    .min(1, "Le niveau est requis.")
-    .uuid("ID de niveau invalide."),
-  enseignantId: z
-    .string()
-    .min(1, "L'enseignant est requis.")
-    .uuid("ID d'enseignant invalide."),
-  matiereId: z
-    .string()
-    .min(1, "La matière est requise.")
-    .uuid("ID de matière invalide."),
-  salleId: z
-    .string()
-    .min(1, "La salle est requise.")
-    .uuid("ID de salle invalide."),
-  date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "La date est requise au format YYYY-MM-DD."),
-  heureDebut: z
-    .string()
-    .regex(
-      /^([01]\d|2[0-3]):([0-5]\d)$/,
-      "Format d'heure de début invalide (HH:MM)."
-    ),
-  heureFin: z
-    .string()
-    .regex(
-      /^([01]\d|2[0-3]):([0-5]\d)$/,
-      "Format d'heure de fin invalide (HH:MM)."
-    ),
-  anneeScolaire: z
-    .string()
-    .regex(/^\d{4}-\d{4}$/, "Format de l'année scolaire invalide (YYYY-YYYY)."),
+  niveauId: z.string().min(1, "Le niveau est requis.").uuid("ID de niveau invalide."),
+  enseignantId: z.string().min(1, "L'enseignant est requis.").uuid("ID d'enseignant invalide."),
+  matiereId: z.string().min(1, "La matière est requise.").uuid("ID de matière invalide."),
+  salleId: z.string().min(1, "La salle est requise.").uuid("ID de salle invalide."),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "La date est requise au format YYYY-MM-DD."),
+  heureDebut: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Format d'heure de début invalide (HH:MM)."),
+  heureFin: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Format d'heure de fin invalide (HH:MM)."),
+  anneeScolaire: z.string().regex(/^\d{4}-\d{4}$/, "Format de l'année scolaire invalide (YYYY-YYYY)."),
   semestre: z.string().nullable().optional(),
-});
+})
 
 const seanceSchemaBase = seanceSchemaBaseObject.refine(
   (data) => {
-    const [h1, m1] = data.heureDebut.split(":").map(Number);
-    const [h2, m2] = data.heureFin.split(":").map(Number);
-    const debut = h1 * 60 + m1;
-    const fin = h2 * 60 + m2;
-    return fin > debut;
+    const [h1, m1] = data.heureDebut.split(":").map(Number)
+    const [h2, m2] = data.heureFin.split(":").map(Number)
+    const debut = h1 * 60 + m1
+    const fin = h2 * 60 + m2
+    return fin > debut
   },
   {
     message: "L'heure de fin doit être postérieure à l'heure de début.",
     path: ["heureFin"],
-  }
-);
+  },
+)
 
-const createSeanceSchema = seanceSchemaBase;
+const createSeanceSchema = seanceSchemaBase
 const updateSeanceSchema = seanceSchemaBaseObject.partial().refine(
   (data) => {
-    if (!data.heureDebut || !data.heureFin) return true;
-    const [h1, m1] = data.heureDebut.split(":").map(Number);
-    const [h2, m2] = data.heureFin.split(":").map(Number);
-    const debut = h1 * 60 + m1;
-    const fin = h2 * 60 + m2;
-    return fin > debut;
+    if (!data.heureDebut || !data.heureFin) return true
+    const [h1, m1] = data.heureDebut.split(":").map(Number)
+    const [h2, m2] = data.heureFin.split(":").map(Number)
+    const debut = h1 * 60 + m1
+    const fin = h2 * 60 + m2
+    return fin > debut
   },
   {
     message: "L'heure de fin doit être postérieure à l'heure de début.",
     path: ["heureFin"],
-  }
-);
+  },
+)
 
-type CreateFormValues = z.infer<typeof createSeanceSchema>;
-type UpdateFormValues = z.infer<typeof updateSeanceSchema>;
+type CreateFormValues = z.infer<typeof createSeanceSchema>
+type UpdateFormValues = z.infer<typeof updateSeanceSchema>
 
 // Affichage de la date au format JJ/MM/AAAA
 const formatDate = (dateString: string): string => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("fr-FR");
-};
+  if (!dateString) return ""
+  const date = new Date(dateString)
+  return date.toLocaleDateString("fr-FR")
+}
 
 const formatTime = (dateString: string): string => {
-  if (!dateString) return "";
+  if (!dateString) return ""
   // Si c'est déjà au format HH:MM
-  if (/^\d{2}:\d{2}$/.test(dateString)) return dateString;
+  if (/^\d{2}:\d{2}$/.test(dateString)) return dateString
   // Sinon, on parse
-  const date = new Date(dateString);
+  const date = new Date(dateString)
   return date.toLocaleTimeString("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
-  });
-};
+  })
+}
 
 const generateAnneeScolaireOptions = () => {
-  const currentYear = new Date().getFullYear();
-  const years = [];
+  const currentYear = new Date().getFullYear()
+  const years = []
   for (let i = currentYear - 5; i <= currentYear + 5; i++) {
-    years.push(`${i}-${i + 1}`);
+    years.push(`${i}-${i + 1}`)
   }
-  return years;
-};
+  return years
+}
 
-const anneeScolaireOptions = generateAnneeScolaireOptions();
-const semestreOptions = ["S1", "S2"];
+const anneeScolaireOptions = generateAnneeScolaireOptions()
+const semestreOptions = ["S1", "S2"]
 
 export default function AdminSeancesPage() {
-  const [seances, setSeances] = useState<Seance[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [selectedSeance, setSelectedSeance] = useState<Seance | null>(null);
-  const [submitLoading, setSubmitLoading] = useState(false);
+  const [seances, setSeances] = useState<Seance[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+  const [selectedSeance, setSelectedSeance] = useState<Seance | null>(null)
+  const [submitLoading, setSubmitLoading] = useState(false)
 
-  const [niveauxOptions, setNiveauxOptions] = useState<Niveau[]>([]);
-  const [enseignantsOptions, setEnseignantsOptions] = useState<
-    EnseignantOption[]
-  >([]);
-  const [matieresOptions, setMatieresOptions] = useState<Matiere[]>([]);
-  const [sallesOptions, setSallesOptions] = useState<Salle[]>([]);
-  const [enseignantMatiereRelations, setEnseignantMatiereRelations] = useState<
-    EnseignantMatiereRelation[]
-  >([]);
+  const [niveauxOptions, setNiveauxOptions] = useState<Niveau[]>([])
+  const [enseignantsOptions, setEnseignantsOptions] = useState<EnseignantOption[]>([])
+  const [matieresOptions, setMatieresOptions] = useState<Matiere[]>([])
+  const [sallesOptions, setSallesOptions] = useState<Salle[]>([])
+  const [enseignantMatiereRelations, setEnseignantMatiereRelations] = useState<EnseignantMatiereRelation[]>([])
 
-  const [filteredMatieresForForm, setFilteredMatieresForForm] = useState<
-    Matiere[]
-  >([]);
-  const [filteredEnseignantsForForm, setFilteredEnseignantsForForm] = useState<
-    EnseignantOption[]
-  >([]);
+  const [filteredMatieresForForm, setFilteredMatieresForForm] = useState<Matiere[]>([])
+  const [filteredEnseignantsForForm, setFilteredEnseignantsForForm] = useState<EnseignantOption[]>([])
 
   // SUPPRIMER jour du state des filtres
   const [filters, setFilters] = useState<any>({
@@ -316,7 +249,7 @@ export default function AdminSeancesPage() {
     // date: "all",
     anneeScolaire: "all",
     semestre: "all",
-  });
+  })
 
   const createForm = useForm<CreateFormValues>({
     resolver: zodResolver(createSeanceSchema),
@@ -331,7 +264,7 @@ export default function AdminSeancesPage() {
       anneeScolaire: anneeScolaireOptions[anneeScolaireOptions.length - 6],
       semestre: null,
     },
-  });
+  })
 
   const editForm = useForm<UpdateFormValues>({
     resolver: zodResolver(updateSeanceSchema),
@@ -346,214 +279,182 @@ export default function AdminSeancesPage() {
       anneeScolaire: "",
       semestre: "",
     },
-  });
+  })
 
   // --- WATCHED VALUES (pour désactiver dynamiquement les selects) ---
-  const watchedNiveauId = createForm.watch("niveauId");
-  const watchedMatiereId = createForm.watch("matiereId");
-  const watchedNiveauIdEdit = editForm.watch("niveauId");
-  const watchedMatiereIdEdit = editForm.watch("matiereId");
+  const watchedNiveauId = createForm.watch("niveauId")
+  const watchedMatiereId = createForm.watch("matiereId")
+  const watchedNiveauIdEdit = editForm.watch("niveauId")
+  const watchedMatiereIdEdit = editForm.watch("matiereId")
 
   // Fetch data for dropdowns (niveaux, enseignants, matieres, salles, enseignant-matieres relations)
   const fetchFormOptions = useCallback(async () => {
-    const accessToken = localStorage.getItem("accessToken");
+    const accessToken = localStorage.getItem("accessToken")
     if (!accessToken) {
-      setError("Token d'authentification manquant. Veuillez vous reconnecter.");
-      return;
+      setError("Token d'authentification manquant. Veuillez vous reconnecter.")
+      return
     }
 
-    const headers = { Authorization: `Bearer ${accessToken}` };
+    const headers = { Authorization: `Bearer ${accessToken}` }
 
     try {
-      const [
-        niveauxRes,
-        utilisateursRes,
-        matieresRes,
-        sallesRes,
-        relationsRes,
-      ] = await Promise.all([
-        fetch("http://localhost:3000/api/niveaux", { headers }),
-        fetch("http://localhost:3000/api/utilisateurs?role=ENSEIGNANT", {
+      const [niveauxRes, utilisateursRes, matieresRes, sallesRes, relationsRes] = await Promise.all([
+        fetch(`${API_URL}/api/niveaux`, { headers }),
+        fetch(`${API_URL}/api/utilisateurs?role=ENSEIGNANT`, {
           headers,
         }),
-        fetch("http://localhost:3000/api/matieres", { headers }),
-        fetch("http://localhost:3000/api/salles", { headers }),
-        fetch("http://localhost:3000/api/enseignant-matiere", { headers }),
-      ]);
+        fetch(`${API_URL}/api/matieres`, { headers }),
+        fetch(`${API_URL}/api/salles`, { headers }),
+        fetch(`${API_URL}/api/enseignant-matiere`, { headers }),
+      ])
 
-      const niveauxData = await niveauxRes.json();
-      const utilisateursData = await utilisateursRes.json();
-      const matieresData = await matieresRes.json();
-      const sallesData = await sallesRes.json();
-      const relationsData = await relationsRes.json();
+      const niveauxData = await niveauxRes.json()
+      const utilisateursData = await utilisateursRes.json()
+      const matieresData = await matieresRes.json()
+      const sallesData = await sallesRes.json()
+      const relationsData = await relationsRes.json()
 
-      if (niveauxRes.ok) setNiveauxOptions(niveauxData.data || []);
-      else console.error("Failed to fetch niveaux:", niveauxData.message);
+      if (niveauxRes.ok) setNiveauxOptions(niveauxData.data || [])
+      else console.error("Failed to fetch niveaux:", niveauxData.message)
 
       if (utilisateursRes.ok) {
-        const usersArray = utilisateursData.data || utilisateursData || [];
+        const usersArray = utilisateursData.data || utilisateursData || []
         if (Array.isArray(usersArray)) {
           const teachers = usersArray
             .filter((u: any) => u.role === Role.ENSEIGNANT && u.enseignant)
             .map((u: any) => ({
               id: u.enseignant.id,
               nom: u.nom,
-            }));
-          setEnseignantsOptions(teachers || []);
+            }))
+          setEnseignantsOptions(teachers || [])
         } else {
-          console.error("Users data is not an array:", usersArray);
-          setEnseignantsOptions([]);
+          console.error("Users data is not an array:", usersArray)
+          setEnseignantsOptions([])
         }
-      } else
-        console.error("Failed to fetch enseignants:", utilisateursData.message);
+      } else console.error("Failed to fetch enseignants:", utilisateursData.message)
 
-      if (matieresRes.ok) setMatieresOptions(matieresData.data || []);
-      else console.error("Failed to fetch matieres:", matieresData.message);
+      if (matieresRes.ok) setMatieresOptions(matieresData.data || [])
+      else console.error("Failed to fetch matieres:", matieresData.message)
 
-      if (sallesRes.ok) setSallesOptions(sallesData.data || []);
-      else console.error("Failed to fetch salles:", sallesData.message);
+      if (sallesRes.ok) setSallesOptions(sallesData.data || [])
+      else console.error("Failed to fetch salles:", sallesData.message)
 
-      if (relationsRes.ok)
-        setEnseignantMatiereRelations(relationsData.data || []);
-      else console.error("Failed to fetch relations:", relationsData.message);
+      if (relationsRes.ok) setEnseignantMatiereRelations(relationsData.data || [])
+      else console.error("Failed to fetch relations:", relationsData.message)
     } catch (err) {
-      console.error("Error fetching form options:", err);
-      toast.error("Erreur lors du chargement des options de formulaire.");
+      console.error("Error fetching form options:", err)
+      toast.error("Erreur lors du chargement des options de formulaire.")
     }
-  }, []);
+  }, [])
 
   // Fetch seances from backend with filters
   const fetchSeances = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    const accessToken = localStorage.getItem("accessToken");
+    setLoading(true)
+    setError(null)
+    const accessToken = localStorage.getItem("accessToken")
     if (!accessToken) {
-      setError("Token d'authentification manquant. Veuillez vous reconnecter.");
-      setLoading(false);
-      return;
+      setError("Token d'authentification manquant. Veuillez vous reconnecter.")
+      setLoading(false)
+      return
     }
 
-    const queryParams = new URLSearchParams();
+    const queryParams = new URLSearchParams()
     Object.entries(filters).forEach(([key, value]) => {
       if (value && value !== "all") {
-        queryParams.append(key, String(value));
+        queryParams.append(key, String(value))
       }
-    });
+    })
 
     try {
-      const response = await fetch(
-       `${API_URL}/api/seances?${queryParams.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/api/seances?${queryParams.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
 
-      const data = await response.json();
+      const data = await response.json()
       if (!response.ok) {
-        throw new Error(
-          data.message || "Échec de la récupération des séances."
-        );
+        throw new Error(data.message || "Échec de la récupération des séances.")
       }
 
-      setSeances(data.data || []);
+      setSeances(data.data || [])
     } catch (err: any) {
-      console.error("Erreur lors de la récupération des séances:", err);
-      setError(
-        err.message || "Une erreur est survenue lors du chargement des séances."
-      );
+      console.error("Erreur lors de la récupération des séances:", err)
+      setError(err.message || "Une erreur est survenue lors du chargement des séances.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [filters]);
+  }, [filters])
 
   useEffect(() => {
-    fetchFormOptions();
-  }, [fetchFormOptions]);
+    fetchFormOptions()
+  }, [fetchFormOptions])
 
   useEffect(() => {
-    fetchSeances();
-  }, [fetchSeances]);
+    fetchSeances()
+  }, [fetchSeances])
 
   // ----------- FILTRAGE DYNAMIQUE PAR NIVEAU AVANT MATIERE/ENSEIGNANT -----------
   // Quand le niveau change : filtre matières et enseignants pour ce niveau
   useEffect(() => {
-    const niveauId = createForm.getValues().niveauId;
+    const niveauId = createForm.getValues().niveauId
     if (!niveauId) {
-      setFilteredMatieresForForm([]);
-      setFilteredEnseignantsForForm([]);
-      createForm.setValue("matiereId", "");
-      createForm.setValue("enseignantId", "");
-      return;
+      setFilteredMatieresForForm([])
+      setFilteredEnseignantsForForm([])
+      createForm.setValue("matiereId", "")
+      createForm.setValue("enseignantId", "")
+      return
     }
 
     // Filtrer matières du niveau sélectionné
-    const matieresFiltrees = matieresOptions.filter(
-      (m) => m.niveau.id === niveauId
-    );
-    setFilteredMatieresForForm(matieresFiltrees);
+    const matieresFiltrees = matieresOptions.filter((m) => m.niveau.id === niveauId)
+    setFilteredMatieresForForm(matieresFiltrees)
 
     // Filtrer enseignants qui enseignent au moins une matière de ce niveau
     const enseignantsIdsPourCeNiveau = enseignantMatiereRelations
       .filter((rel) => matieresFiltrees.some((m) => m.id === rel.matiereId))
-      .map((rel) => rel.enseignantId);
+      .map((rel) => rel.enseignantId)
 
-    const enseignantsFiltrees = enseignantsOptions.filter((e) =>
-      enseignantsIdsPourCeNiveau.includes(e.id)
-    );
-    setFilteredEnseignantsForForm(enseignantsFiltrees);
+    const enseignantsFiltrees = enseignantsOptions.filter((e) => enseignantsIdsPourCeNiveau.includes(e.id))
+    setFilteredEnseignantsForForm(enseignantsFiltrees)
 
     // Reset matière et enseignant à chaque changement de niveau
-    createForm.setValue("matiereId", "");
-    createForm.setValue("enseignantId", "");
-  }, [
-    createForm.getValues().niveauId,
-    matieresOptions,
-    enseignantsOptions,
-    enseignantMatiereRelations,
-  ]);
+    createForm.setValue("matiereId", "")
+    createForm.setValue("enseignantId", "")
+  }, [createForm.getValues().niveauId, matieresOptions, enseignantsOptions, enseignantMatiereRelations])
 
   // Quand la matière change : filtre les enseignants de cette matière, auto-select si un seul
   useEffect(() => {
-    const matiereId = createForm.getValues().matiereId;
+    const matiereId = createForm.getValues().matiereId
     if (!matiereId) {
-      setFilteredEnseignantsForForm([]);
-      createForm.setValue("enseignantId", "");
-      return;
+      setFilteredEnseignantsForForm([])
+      createForm.setValue("enseignantId", "")
+      return
     }
 
     // Trouve les enseignants qui enseignent cette matière (et qui sont dans ce niveau)
     const enseignantsPourMatiere = enseignantMatiereRelations
       .filter((rel) => rel.matiereId === matiereId)
-      .map((rel) => rel.enseignantId);
+      .map((rel) => rel.enseignantId)
 
-    const enseignantsFiltrees = enseignantsOptions.filter((e) =>
-      enseignantsPourMatiere.includes(e.id)
-    );
-    setFilteredEnseignantsForForm(enseignantsFiltrees);
+    const enseignantsFiltrees = enseignantsOptions.filter((e) => enseignantsPourMatiere.includes(e.id))
+    setFilteredEnseignantsForForm(enseignantsFiltrees)
 
     // Auto-select si un seul enseignant
     if (enseignantsFiltrees.length === 1) {
       createForm.setValue("enseignantId", enseignantsFiltrees[0].id, {
         shouldValidate: true,
-      });
-    } else if (
-      !enseignantsPourMatiere.includes(createForm.getValues().enseignantId)
-    ) {
-      createForm.setValue("enseignantId", "");
+      })
+    } else if (!enseignantsPourMatiere.includes(createForm.getValues().enseignantId)) {
+      createForm.setValue("enseignantId", "")
     }
-  }, [
-    createForm.getValues().matiereId,
-    enseignantsOptions,
-    enseignantMatiereRelations,
-  ]);
+  }, [createForm.getValues().matiereId, enseignantsOptions, enseignantMatiereRelations])
 
   // Reset matières/enseignants quand modal création s'ouvre
   useEffect(() => {
     if (isCreateModalOpen) {
-      setFilteredMatieresForForm([]);
-      setFilteredEnseignantsForForm([]);
+      setFilteredMatieresForForm([])
+      setFilteredEnseignantsForForm([])
       createForm.reset({
         niveauId: "",
         matiereId: "",
@@ -563,27 +464,23 @@ export default function AdminSeancesPage() {
         heureFin: "10:00",
         anneeScolaire: anneeScolaireOptions[anneeScolaireOptions.length - 6],
         semestre: null,
-      });
+      })
     }
-  }, [isCreateModalOpen, createForm]);
+  }, [isCreateModalOpen, createForm])
 
   // ---------- LOGIQUE SIMILAIRE POUR LE FORMULAIRE D'EDITION -------------------
   useEffect(() => {
     if (isEditModalOpen && selectedSeance) {
       // Filtre matières et enseignants pour le niveau de la séance
-      const matieresFiltrees = matieresOptions.filter(
-        (m) => m.niveau.id === selectedSeance.niveauId
-      );
-      setFilteredMatieresForForm(matieresFiltrees);
+      const matieresFiltrees = matieresOptions.filter((m) => m.niveau.id === selectedSeance.niveauId)
+      setFilteredMatieresForForm(matieresFiltrees)
 
       const enseignantsIdsPourCeNiveau = enseignantMatiereRelations
         .filter((rel) => matieresFiltrees.some((m) => m.id === rel.matiereId))
-        .map((rel) => rel.enseignantId);
+        .map((rel) => rel.enseignantId)
 
-      const enseignantsFiltrees = enseignantsOptions.filter((e) =>
-        enseignantsIdsPourCeNiveau.includes(e.id)
-      );
-      setFilteredEnseignantsForForm(enseignantsFiltrees);
+      const enseignantsFiltrees = enseignantsOptions.filter((e) => enseignantsIdsPourCeNiveau.includes(e.id))
+      setFilteredEnseignantsForForm(enseignantsFiltrees)
 
       // Remplir le form d'édition
       editForm.reset({
@@ -595,87 +492,63 @@ export default function AdminSeancesPage() {
         heureFin: formatTime(selectedSeance.heureFin),
         anneeScolaire: selectedSeance.anneeScolaire,
         semestre: selectedSeance.semestre,
-      });
+      })
     }
-  }, [
-    isEditModalOpen,
-    selectedSeance,
-    matieresOptions,
-    enseignantsOptions,
-    enseignantMatiereRelations,
-    editForm,
-  ]);
+  }, [isEditModalOpen, selectedSeance, matieresOptions, enseignantsOptions, enseignantMatiereRelations, editForm])
 
   useEffect(() => {
-    const niveauId = editForm.getValues().niveauId;
+    const niveauId = editForm.getValues().niveauId
     if (!niveauId) {
-      setFilteredMatieresForForm([]);
-      setFilteredEnseignantsForForm([]);
-      editForm.setValue("matiereId", "");
-      editForm.setValue("enseignantId", "");
-      return;
+      setFilteredMatieresForForm([])
+      setFilteredEnseignantsForForm([])
+      editForm.setValue("matiereId", "")
+      editForm.setValue("enseignantId", "")
+      return
     }
 
-    const matieresFiltrees = matieresOptions.filter(
-      (m) => m.niveau.id === niveauId
-    );
-    setFilteredMatieresForForm(matieresFiltrees);
+    const matieresFiltrees = matieresOptions.filter((m) => m.niveau.id === niveauId)
+    setFilteredMatieresForForm(matieresFiltrees)
 
     const enseignantsIdsPourCeNiveau = enseignantMatiereRelations
       .filter((rel) => matieresFiltrees.some((m) => m.id === rel.matiereId))
-      .map((rel) => rel.enseignantId);
+      .map((rel) => rel.enseignantId)
 
-    const enseignantsFiltrees = enseignantsOptions.filter((e) =>
-      enseignantsIdsPourCeNiveau.includes(e.id)
-    );
-    setFilteredEnseignantsForForm(enseignantsFiltrees);
-  }, [
-    editForm.getValues().niveauId,
-    matieresOptions,
-    enseignantsOptions,
-    enseignantMatiereRelations,
-  ]);
+    const enseignantsFiltrees = enseignantsOptions.filter((e) => enseignantsIdsPourCeNiveau.includes(e.id))
+    setFilteredEnseignantsForForm(enseignantsFiltrees)
+  }, [editForm.getValues().niveauId, matieresOptions, enseignantsOptions, enseignantMatiereRelations])
 
   useEffect(() => {
-    const matiereId = editForm.getValues().matiereId;
+    const matiereId = editForm.getValues().matiereId
     if (!matiereId) {
-      setFilteredEnseignantsForForm([]);
-      editForm.setValue("enseignantId", "");
-      return;
+      setFilteredEnseignantsForForm([])
+      editForm.setValue("enseignantId", "")
+      return
     }
 
     const enseignantsPourMatiere = enseignantMatiereRelations
       .filter((rel) => rel.matiereId === matiereId)
-      .map((rel) => rel.enseignantId);
+      .map((rel) => rel.enseignantId)
 
-    const enseignantsFiltrees = enseignantsOptions.filter((e) =>
-      enseignantsPourMatiere.includes(e.id)
-    );
-    setFilteredEnseignantsForForm(enseignantsFiltrees);
+    const enseignantsFiltrees = enseignantsOptions.filter((e) => enseignantsPourMatiere.includes(e.id))
+    setFilteredEnseignantsForForm(enseignantsFiltrees)
 
     if (enseignantsFiltrees.length === 1) {
       editForm.setValue("enseignantId", enseignantsFiltrees[0].id, {
         shouldValidate: true,
-      });
-    } else if (
-      !enseignantsPourMatiere.includes(editForm.getValues().enseignantId ?? "")
-    ) {
-      editForm.setValue("enseignantId", "");
+      })
+    } else if (!enseignantsPourMatiere.includes(editForm.getValues().enseignantId ?? "")) {
+      editForm.setValue("enseignantId", "")
     }
-  }, [
-    editForm.getValues().matiereId,
-    enseignantsOptions,
-    enseignantMatiereRelations,
-  ]);
+  }, [editForm.getValues().matiereId, enseignantsOptions, enseignantMatiereRelations])
 
   // Handle Create Seance
   const onCreateSubmit = async (values: CreateFormValues) => {
-    setSubmitLoading(true);
-    const accessToken = localStorage.getItem("accessToken");
+    setSubmitLoading(true)
+    const accessToken = localStorage.getItem("accessToken")
     if (!accessToken) {
-      toast.error("Token d'authentification manquant.");
-      setSubmitLoading(false);
-      return;
+      toast.error("Token d'authentification manquant.")
+      setSubmitLoading(false)
+      return
     }
 
     // -----> Vérification des conflits côté frontend
@@ -689,21 +562,21 @@ export default function AdminSeancesPage() {
         anneeScolaire: values.anneeScolaire,
         semestre: values.semestre ?? null,
       },
-      seances
-    );
+      seances,
+    )
 
     if (conflits.anyConflict) {
-      if (conflits.salle) toast.error(conflits.salle);
-      if (conflits.enseignant) toast.error(conflits.enseignant);
-      setSubmitLoading(false);
-      return;
+      if (conflits.salle) toast.error(conflits.salle)
+      if (conflits.enseignant) toast.error(conflits.enseignant)
+      setSubmitLoading(false)
+      return
     }
 
     try {
       const payload = {
         ...values,
         semestre: values.semestre === "" ? null : values.semestre,
-      };
+      }
 
       const response = await fetch(`${API_URL}/api/seances`, {
         method: "POST",
@@ -712,160 +585,150 @@ export default function AdminSeancesPage() {
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(payload),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
       if (!response.ok) {
         throw new Error(
-          Array.isArray(data.message)
-            ? data.message.join(", ")
-            : data.message || "Échec de la création de la séance."
-        );
+          Array.isArray(data.message) ? data.message.join(", ") : data.message || "Échec de la création de la séance.",
+        )
       }
 
-      toast.success("Séance créée avec succès !");
-      setIsCreateModalOpen(false);
-      createForm.reset();
-      fetchSeances();
+      toast.success("Séance créée avec succès !")
+      setIsCreateModalOpen(false)
+      createForm.reset()
+      fetchSeances()
     } catch (err: any) {
-      console.error("Erreur lors de la création de la séance:", err);
-      toast.error(err.message || "Erreur lors de la création de la séance.");
+      console.error("Erreur lors de la création de la séance:", err)
+      toast.error(err.message || "Erreur lors de la création de la séance.")
     } finally {
-      setSubmitLoading(false);
+      setSubmitLoading(false)
     }
-  };
+  }
 
   // Handle Edit Seance
   const onEditSubmit = async (values: UpdateFormValues) => {
-    if (!selectedSeance) return;
+    if (!selectedSeance) return
 
-    setSubmitLoading(true);
-    const accessToken = localStorage.getItem("accessToken");
+    setSubmitLoading(true)
+    const accessToken = localStorage.getItem("accessToken")
     if (!accessToken) {
-      toast.error("Token d'authentification manquant.");
-      setSubmitLoading(false);
-      return;
+      toast.error("Token d'authentification manquant.")
+      setSubmitLoading(false)
+      return
     }
 
     // -----> Vérification des conflits côté frontend (exclut la séance éditée)
     const conflits = detectSeanceConflicts(
-    {
-      salleId: values.salleId ?? "",
-      enseignantId: values.enseignantId ?? "",
-      date: values.date ?? "",
-      heureDebut: values.heureDebut ?? "",
-      heureFin: values.heureFin ?? "",
-      anneeScolaire: values.anneeScolaire ?? "",
-      semestre: values.semestre ?? null,
-    },
+      {
+        salleId: values.salleId ?? "",
+        enseignantId: values.enseignantId ?? "",
+        date: values.date ?? "",
+        heureDebut: values.heureDebut ?? "",
+        heureFin: values.heureFin ?? "",
+        anneeScolaire: values.anneeScolaire ?? "",
+        semestre: values.semestre ?? null,
+      },
       seances,
-      selectedSeance?.id // dans le cas de l'édition
-    );
+      selectedSeance?.id, // dans le cas de l'édition
+    )
 
     if (conflits.anyConflict) {
-      if (conflits.salle) toast.error(conflits.salle);
-      if (conflits.enseignant) toast.error(conflits.enseignant);
-      setSubmitLoading(false);
-      return;
+      if (conflits.salle) toast.error(conflits.salle)
+      if (conflits.enseignant) toast.error(conflits.enseignant)
+      setSubmitLoading(false)
+      return
     }
-    
+
     try {
       const payload = {
         ...values,
         semestre: values.semestre === "" ? null : values.semestre,
-      };
+      }
 
-      const response = await fetch(
-        `${API_URL}/api/seances/${selectedSeance.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/seances/${selectedSeance.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(payload),
+      })
 
-      const data = await response.json();
+      const data = await response.json()
       if (!response.ok) {
         throw new Error(
           Array.isArray(data.message)
             ? data.message.join(", ")
-            : data.message || "Échec de la mise à jour de la séance."
-        );
+            : data.message || "Échec de la mise à jour de la séance.",
+        )
       }
 
-      toast.success("Séance mise à jour avec succès !");
-      setIsEditModalOpen(false);
-      editForm.reset();
-      fetchSeances();
+      toast.success("Séance mise à jour avec succès !")
+      setIsEditModalOpen(false)
+      editForm.reset()
+      fetchSeances()
     } catch (err: any) {
-      console.error("Erreur lors de la mise à jour de la séance:", err);
-      toast.error(err.message || "Erreur lors de la mise à jour de la séance.");
+      console.error("Erreur lors de la mise à jour de la séance:", err)
+      toast.error(err.message || "Erreur lors de la mise à jour de la séance.")
     } finally {
-      setSubmitLoading(false);
+      setSubmitLoading(false)
     }
-  };
+  }
 
   // Handle Delete Seance
   const onDeleteConfirm = async () => {
-    if (!selectedSeance) return;
+    if (!selectedSeance) return
 
-    setSubmitLoading(true);
-    const accessToken = localStorage.getItem("accessToken");
+    setSubmitLoading(true)
+    const accessToken = localStorage.getItem("accessToken")
     if (!accessToken) {
-      toast.error("Token d'authentification manquant.");
-      setSubmitLoading(false);
-      return;
+      toast.error("Token d'authentification manquant.")
+      setSubmitLoading(false)
+      return
     }
 
     try {
-      const response = await fetch(
-        `${API_URL}/api/seances/${selectedSeance.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/api/seances/${selectedSeance.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
 
-      const data = await response.json();
+      const data = await response.json()
       if (!response.ok) {
-        throw new Error(
-          data.message || "Échec de la suppression de la séance."
-        );
+        throw new Error(data.message || "Échec de la suppression de la séance.")
       }
 
-      toast.success("Séance supprimée avec succès !");
-      setIsDeleteConfirmOpen(false);
-      setSelectedSeance(null);
-      fetchSeances();
+      toast.success("Séance supprimée avec succès !")
+      setIsDeleteConfirmOpen(false)
+      setSelectedSeance(null)
+      fetchSeances()
     } catch (err: any) {
-      console.error("Erreur lors de la suppression de la séance:", err);
-      toast.error(err.message || "Erreur lors de la suppression de la séance.");
+      console.error("Erreur lors de la suppression de la séance:", err)
+      toast.error(err.message || "Erreur lors de la suppression de la séance.")
     } finally {
-      setSubmitLoading(false);
+      setSubmitLoading(false)
     }
-  };
+  }
 
   // Open Edit Modal
   const openEditModal = (seance: Seance) => {
-    setSelectedSeance(seance);
-    setIsEditModalOpen(true); // This will trigger the useEffect for initialization
-  };
+    setSelectedSeance(seance)
+    setIsEditModalOpen(true) // This will trigger the useEffect for initialization
+  }
 
   // Open Delete Confirm
   const openDeleteConfirm = (seance: Seance) => {
-    setSelectedSeance(seance);
-    setIsDeleteConfirmOpen(true);
-  };
+    setSelectedSeance(seance)
+    setIsDeleteConfirmOpen(true)
+  }
 
   // Handle filter changes
   const handleFilterChange = (key: string, value: string) => {
-    setFilters((prev: any) => ({ ...prev, [key]: value }));
-  };
+    setFilters((prev: any) => ({ ...prev, [key]: value }))
+  }
 
   // Reset filters
   const resetFilters = () => {
@@ -877,8 +740,8 @@ export default function AdminSeancesPage() {
       // jour: "all",
       anneeScolaire: "all",
       semestre: "all",
-    });
-  };
+    })
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 relative overflow-hidden">
@@ -928,15 +791,10 @@ export default function AdminSeancesPage() {
                     <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 bg-clip-text text-transparent">
                       Gestion des Séances
                     </h1>
-                    <p className="text-gray-600 mt-2 text-lg">
-                      Planifiez et organisez vos cours efficacement
-                    </p>
+                    <p className="text-gray-600 mt-2 text-lg">Planifiez et organisez vos cours efficacement</p>
                   </div>
                 </div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button
                     onClick={() => setIsCreateModalOpen(true)}
                     className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white px-8 py-5 text-lg font-semibold rounded-2xl shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/30 cursor-pointer transition-all duration-300"
@@ -979,35 +837,21 @@ export default function AdminSeancesPage() {
                   <div className="relative">
                     <div className="flex items-center mb-2">
                       <GraduationCap className="h-5 w-5 text-gray-600 mr-2" />
-                      <span className="text-sm font-medium text-gray-700">
-                        Filtrer par niveau
-                      </span>
+                      <span className="text-sm font-medium text-gray-700">Filtrer par niveau</span>
                     </div>
-                    <Select
-                      onValueChange={(val) =>
-                        handleFilterChange("niveauId", val)
-                      }
-                      value={filters.niveauId}
-                    >
+                    <Select onValueChange={(val) => handleFilterChange("niveauId", val)} value={filters.niveauId}>
                       <SelectTrigger className="cursor-pointer h-12 text-base border-2 border-gray-200/50 focus:border-blue-500 rounded-xl px-4 transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm hover:shadow-md">
                         <SelectValue placeholder="Filtrer par niveau" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
-                        <SelectItem
-                          value="all"
-                          className="rounded-lg cursor-pointer"
-                        >
+                        <SelectItem value="all" className="rounded-lg cursor-pointer">
                           <span className="flex items-center">
                             <Search className="h-4 w-4 mr-2 text-gray-500" />
                             Tous les niveaux
                           </span>
                         </SelectItem>
                         {niveauxOptions.map((niv) => (
-                          <SelectItem
-                            key={niv.id}
-                            value={niv.id}
-                            className="rounded-lg cursor-pointer"
-                          >
+                          <SelectItem key={niv.id} value={niv.id} className="rounded-lg cursor-pointer">
                             {niv.nom} ({niv.departement.nom})
                           </SelectItem>
                         ))}
@@ -1026,35 +870,24 @@ export default function AdminSeancesPage() {
                   <div className="relative">
                     <div className="flex items-center mb-2">
                       <User className="h-5 w-5 text-gray-600 mr-2" />
-                      <span className="text-sm font-medium text-gray-700">
-                        Filtrer par enseignant
-                      </span>
+                      <span className="text-sm font-medium text-gray-700">Filtrer par enseignant</span>
                     </div>
                     <Select
-                      onValueChange={(val) =>
-                        handleFilterChange("enseignantId", val)
-                      }
+                      onValueChange={(val) => handleFilterChange("enseignantId", val)}
                       value={filters.enseignantId}
                     >
                       <SelectTrigger className="cursor-pointer h-12 text-base border-2 border-gray-200/50 focus:border-green-500 rounded-xl px-4 transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm hover:shadow-md">
                         <SelectValue placeholder="Filtrer par enseignant" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
-                        <SelectItem
-                          value="all"
-                          className="rounded-lg cursor-pointer"
-                        >
+                        <SelectItem value="all" className="rounded-lg cursor-pointer">
                           <span className="flex items-center">
                             <Search className="h-4 w-4 mr-2 text-gray-500" />
                             Tous les enseignants
                           </span>
                         </SelectItem>
                         {enseignantsOptions.map((ens) => (
-                          <SelectItem
-                            key={ens.id}
-                            value={ens.id}
-                            className="rounded-lg cursor-pointer"
-                          >
+                          <SelectItem key={ens.id} value={ens.id} className="rounded-lg cursor-pointer">
                             {ens.nom}
                           </SelectItem>
                         ))}
@@ -1073,35 +906,21 @@ export default function AdminSeancesPage() {
                   <div className="relative">
                     <div className="flex items-center mb-2">
                       <BookOpen className="h-5 w-5 text-gray-600 mr-2" />
-                      <span className="text-sm font-medium text-gray-700">
-                        Filtrer par matière
-                      </span>
+                      <span className="text-sm font-medium text-gray-700">Filtrer par matière</span>
                     </div>
-                    <Select
-                      onValueChange={(val) =>
-                        handleFilterChange("matiereId", val)
-                      }
-                      value={filters.matiereId}
-                    >
+                    <Select onValueChange={(val) => handleFilterChange("matiereId", val)} value={filters.matiereId}>
                       <SelectTrigger className="cursor-pointer h-12 text-base border-2 border-gray-200/50 focus:border-purple-500 rounded-xl px-4 transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm hover:shadow-md">
                         <SelectValue placeholder="Filtrer par matière" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
-                        <SelectItem
-                          value="all"
-                          className="rounded-lg cursor-pointer"
-                        >
+                        <SelectItem value="all" className="rounded-lg cursor-pointer">
                           <span className="flex items-center">
                             <Search className="h-4 w-4 mr-2 text-gray-500" />
                             Toutes les matières
                           </span>
                         </SelectItem>
                         {matieresOptions.map((mat) => (
-                          <SelectItem
-                            key={mat.id}
-                            value={mat.id}
-                            className="rounded-lg cursor-pointer"
-                          >
+                          <SelectItem key={mat.id} value={mat.id} className="rounded-lg cursor-pointer">
                             {mat.nom} ({mat.niveau.nom})
                           </SelectItem>
                         ))}
@@ -1120,35 +939,21 @@ export default function AdminSeancesPage() {
                   <div className="relative">
                     <div className="flex items-center mb-2">
                       <MapPin className="h-5 w-5 text-gray-600 mr-2" />
-                      <span className="text-sm font-medium text-gray-700">
-                        Filtrer par salle
-                      </span>
+                      <span className="text-sm font-medium text-gray-700">Filtrer par salle</span>
                     </div>
-                    <Select
-                      onValueChange={(val) =>
-                        handleFilterChange("salleId", val)
-                      }
-                      value={filters.salleId}
-                    >
+                    <Select onValueChange={(val) => handleFilterChange("salleId", val)} value={filters.salleId}>
                       <SelectTrigger className="cursor-pointer h-12 text-base border-2 border-gray-200/50 focus:border-orange-500 rounded-xl px-4 transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm hover:shadow-md">
                         <SelectValue placeholder="Filtrer par salle" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
-                        <SelectItem
-                          value="all"
-                          className="rounded-lg cursor-pointer"
-                        >
+                        <SelectItem value="all" className="rounded-lg cursor-pointer">
                           <span className="flex items-center">
                             <Search className="h-4 w-4 mr-2 text-gray-500" />
                             Toutes les salles
                           </span>
                         </SelectItem>
                         {sallesOptions.map((salle) => (
-                          <SelectItem
-                            key={salle.id}
-                            value={salle.id}
-                            className="rounded-lg cursor-pointer"
-                          >
+                          <SelectItem key={salle.id} value={salle.id} className="rounded-lg cursor-pointer">
                             {salle.nom}
                           </SelectItem>
                         ))}
@@ -1187,35 +992,24 @@ export default function AdminSeancesPage() {
                   <div className="relative">
                     <div className="flex items-center mb-2">
                       <Calendar className="h-5 w-5 text-gray-600 mr-2" />
-                      <span className="text-sm font-medium text-gray-700">
-                        Filtrer par année scolaire
-                      </span>
+                      <span className="text-sm font-medium text-gray-700">Filtrer par année scolaire</span>
                     </div>
                     <Select
-                      onValueChange={(val) =>
-                        handleFilterChange("anneeScolaire", val)
-                      }
+                      onValueChange={(val) => handleFilterChange("anneeScolaire", val)}
                       value={filters.anneeScolaire}
                     >
                       <SelectTrigger className="cursor-pointer h-12 text-base border-2 border-gray-200/50 focus:border-teal-500 rounded-xl px-4 transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm hover:shadow-md">
                         <SelectValue placeholder="Filtrer par année scolaire" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
-                        <SelectItem
-                          value="all"
-                          className="rounded-lg cursor-pointer"
-                        >
+                        <SelectItem value="all" className="rounded-lg cursor-pointer">
                           <span className="flex items-center">
                             <Search className="h-4 w-4 mr-2 text-gray-500" />
                             Toutes les années
                           </span>
                         </SelectItem>
                         {anneeScolaireOptions.map((year) => (
-                          <SelectItem
-                            key={year}
-                            value={year}
-                            className="rounded-lg cursor-pointer"
-                          >
+                          <SelectItem key={year} value={year} className="rounded-lg cursor-pointer">
                             {year}
                           </SelectItem>
                         ))}
@@ -1234,35 +1028,21 @@ export default function AdminSeancesPage() {
                   <div className="relative">
                     <div className="flex items-center mb-2">
                       <Clock className="h-5 w-5 text-gray-600 mr-2" />
-                      <span className="text-sm font-medium text-gray-700">
-                        Filtrer par semestre
-                      </span>
+                      <span className="text-sm font-medium text-gray-700">Filtrer par semestre</span>
                     </div>
-                    <Select
-                      onValueChange={(val) =>
-                        handleFilterChange("semestre", val)
-                      }
-                      value={filters.semestre}
-                    >
+                    <Select onValueChange={(val) => handleFilterChange("semestre", val)} value={filters.semestre}>
                       <SelectTrigger className="cursor-pointer h-12 text-base border-2 border-gray-200/50 focus:border-pink-500 rounded-xl px-4 transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm hover:shadow-md">
                         <SelectValue placeholder="Filtrer par semestre" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
-                        <SelectItem
-                          value="all"
-                          className="rounded-lg cursor-pointer"
-                        >
+                        <SelectItem value="all" className="rounded-lg cursor-pointer">
                           <span className="flex items-center">
                             <Search className="h-4 w-4 mr-2 text-gray-500" />
                             Tous les semestres
                           </span>
                         </SelectItem>
                         {semestreOptions.map((sem) => (
-                          <SelectItem
-                            key={sem}
-                            value={sem}
-                            className="rounded-lg cursor-pointer"
-                          >
+                          <SelectItem key={sem} value={sem} className="rounded-lg cursor-pointer">
                             {sem}
                           </SelectItem>
                         ))}
@@ -1272,10 +1052,7 @@ export default function AdminSeancesPage() {
                 </motion.div>
               </div>
               <div className="flex justify-end mt-8">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button
                     variant="outline"
                     onClick={resetFilters}
@@ -1306,9 +1083,7 @@ export default function AdminSeancesPage() {
               >
                 <Loader2 className="h-12 w-12 text-white" />
               </motion.div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Chargement des séances
-              </h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Chargement des séances</h3>
               <p className="text-gray-600 text-lg">Veuillez patienter...</p>
             </motion.div>
           ) : error ? (
@@ -1324,9 +1099,7 @@ export default function AdminSeancesPage() {
               >
                 <AlertCircle className="h-12 w-12 text-white" />
               </motion.div>
-              <h3 className="text-2xl font-bold text-red-900 mb-2">
-                Erreur de chargement
-              </h3>
+              <h3 className="text-2xl font-bold text-red-900 mb-2">Erreur de chargement</h3>
               <p className="text-red-700 text-center text-lg">{error}</p>
             </motion.div>
           ) : seances.length === 0 ? (
@@ -1346,9 +1119,7 @@ export default function AdminSeancesPage() {
               >
                 <Info className="h-12 w-12 text-white" />
               </motion.div>
-              <h3 className="text-2xl font-bold text-blue-900 mb-2">
-                Aucune séance trouvée
-              </h3>
+              <h3 className="text-2xl font-bold text-blue-900 mb-2">Aucune séance trouvée</h3>
               <p className="text-blue-700 text-center text-lg">
                 {Object.values(filters).some((f) => f !== "all")
                   ? "Aucune séance ne correspond à vos critères de filtre."
@@ -1403,15 +1174,9 @@ export default function AdminSeancesPage() {
                           <span>Salle</span>
                         </div>
                       </TableHead>
-                      <TableHead className="text-gray-900 font-bold text-base py-6">
-                        Année Scolaire
-                      </TableHead>
-                      <TableHead className="text-gray-900 font-bold text-base py-6">
-                        Semestre
-                      </TableHead>
-                      <TableHead className="text-gray-900 font-bold text-base py-6 text-right">
-                        Actions
-                      </TableHead>
+                      <TableHead className="text-gray-900 font-bold text-base py-6">Année Scolaire</TableHead>
+                      <TableHead className="text-gray-900 font-bold text-base py-6">Semestre</TableHead>
+                      <TableHead className="text-gray-900 font-bold text-base py-6 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1427,35 +1192,26 @@ export default function AdminSeancesPage() {
                           whileHover={{ scale: 1.01 }}
                         >
                           <TableCell className="py-6">
-                            <span className="font-medium text-gray-900">
-                              {formatDate(seance.date)}
-                            </span>
+                            <span className="font-medium text-gray-900">{formatDate(seance.date)}</span>
                           </TableCell>
                           <TableCell className="py-6">
                             <div className="flex items-center space-x-2 text-gray-700">
                               <Clock className="h-4 w-4 text-blue-500" />
                               <span className="font-medium">
-                                {formatTime(seance.heureDebut)} -{" "}
-                                {formatTime(seance.heureFin)}
+                                {formatTime(seance.heureDebut)} - {formatTime(seance.heureFin)}
                               </span>
                             </div>
                           </TableCell>
                           <TableCell className="py-6">
                             <div className="flex flex-col">
-                              <span className="font-semibold text-gray-900">
-                                {seance.niveau.nom}
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                ({seance.niveau.departement.nom})
-                              </span>
+                              <span className="font-semibold text-gray-900">{seance.niveau.nom}</span>
+                              <span className="text-sm text-gray-500">({seance.niveau.departement.nom})</span>
                             </div>
                           </TableCell>
                           <TableCell className="py-6">
                             <div className="flex items-center space-x-2">
                               <div className="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full"></div>
-                              <span className="font-medium text-gray-900">
-                                {seance.matiere.nom}
-                              </span>
+                              <span className="font-medium text-gray-900">{seance.matiere.nom}</span>
                             </div>
                           </TableCell>
                           <TableCell className="py-6">
@@ -1463,17 +1219,13 @@ export default function AdminSeancesPage() {
                               <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                                 {seance.enseignant.utilisateur.nom.charAt(0)}
                               </div>
-                              <span className="font-medium text-gray-900">
-                                {seance.enseignant.utilisateur.nom}
-                              </span>
+                              <span className="font-medium text-gray-900">{seance.enseignant.utilisateur.nom}</span>
                             </div>
                           </TableCell>
                           <TableCell className="py-6">
                             <div className="flex items-center space-x-2">
                               <MapPin className="h-4 w-4 text-orange-500" />
-                              <span className="font-medium text-gray-900">
-                                {seance.salle.nom}
-                              </span>
+                              <span className="font-medium text-gray-900">{seance.salle.nom}</span>
                             </div>
                           </TableCell>
                           <TableCell className="py-6">
@@ -1492,10 +1244,7 @@ export default function AdminSeancesPage() {
                           </TableCell>
                           <TableCell className="text-right py-6">
                             <div className="flex justify-end space-x-2">
-                              <motion.div
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                              >
+                              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -1505,10 +1254,7 @@ export default function AdminSeancesPage() {
                                   <Edit className="h-4 w-4" />
                                 </Button>
                               </motion.div>
-                              <motion.div
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                              >
+                              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -1545,12 +1291,9 @@ export default function AdminSeancesPage() {
                 <PlusCircle className="h-8 w-8 text-white" />
               </motion.div>
               <div>
-                <DialogTitle className="text-3xl font-bold">
-                  Ajouter une nouvelle séance
-                </DialogTitle>
+                <DialogTitle className="text-3xl font-bold">Ajouter une nouvelle séance</DialogTitle>
                 <DialogDescription className="text-blue-100 text-lg mt-2">
-                  Remplissez les informations pour planifier une nouvelle
-                  séance.
+                  Remplissez les informations pour planifier une nouvelle séance.
                 </DialogDescription>
               </div>
             </div>
@@ -1558,28 +1301,18 @@ export default function AdminSeancesPage() {
 
           <div className="p-8">
             <Form {...createForm}>
-              <form
-                onSubmit={createForm.handleSubmit(onCreateSubmit)}
-                className="space-y-6"
-              >
+              <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={createForm.control}
                     name="niveauId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="create-niveau"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="create-niveau" className="text-gray-900 font-semibold flex items-center">
                           <GraduationCap className="h-5 w-5 mr-2 text-blue-600" />
                           Niveau
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          disabled={!!watchedMatiereId}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!!watchedMatiereId}>
                           <FormControl>
                             <SelectTrigger
                               id="create-niveau"
@@ -1591,11 +1324,7 @@ export default function AdminSeancesPage() {
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
                             {niveauxOptions.map((niv) => (
-                              <SelectItem
-                                key={niv.id}
-                                value={niv.id}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={niv.id} value={niv.id} className="rounded-lg cursor-pointer">
                                 {niv.nom} ({niv.departement.nom})
                               </SelectItem>
                             ))}
@@ -1618,11 +1347,7 @@ export default function AdminSeancesPage() {
                           <User className="h-5 w-5 mr-2 text-green-600" />
                           Enseignant
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          disabled={!watchedMatiereId}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!watchedMatiereId}>
                           <FormControl>
                             <SelectTrigger
                               id="create-enseignant"
@@ -1634,11 +1359,7 @@ export default function AdminSeancesPage() {
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
                             {filteredEnseignantsForForm.map((ens) => (
-                              <SelectItem
-                                key={ens.id}
-                                value={ens.id}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={ens.id} value={ens.id} className="rounded-lg cursor-pointer">
                                 {ens.nom}
                               </SelectItem>
                             ))}
@@ -1654,18 +1375,11 @@ export default function AdminSeancesPage() {
                     name="matiereId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="create-matiere"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="create-matiere" className="text-gray-900 font-semibold flex items-center">
                           <BookOpen className="h-5 w-5 mr-2 text-purple-600" />
                           Matière
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          disabled={!watchedNiveauId}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!watchedNiveauId}>
                           <FormControl>
                             <SelectTrigger
                               id="create-matiere"
@@ -1677,11 +1391,7 @@ export default function AdminSeancesPage() {
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
                             {filteredMatieresForForm.map((mat) => (
-                              <SelectItem
-                                key={mat.id}
-                                value={mat.id}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={mat.id} value={mat.id} className="rounded-lg cursor-pointer">
                                 {mat.nom} ({mat.niveau.nom})
                               </SelectItem>
                             ))}
@@ -1697,17 +1407,11 @@ export default function AdminSeancesPage() {
                     name="salleId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="create-salle"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="create-salle" className="text-gray-900 font-semibold flex items-center">
                           <MapPin className="h-5 w-5 mr-2 text-orange-600" />
                           Salle
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger
                               id="create-salle"
@@ -1719,11 +1423,7 @@ export default function AdminSeancesPage() {
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
                             {sallesOptions.map((salle) => (
-                              <SelectItem
-                                key={salle.id}
-                                value={salle.id}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={salle.id} value={salle.id} className="rounded-lg cursor-pointer">
                                 {salle.nom} (Capacité: {salle.capacite})
                               </SelectItem>
                             ))}
@@ -1735,31 +1435,28 @@ export default function AdminSeancesPage() {
                   />
 
                   <FormField
-              control={createForm.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel
-                    htmlFor="create-date"
-                    className="text-gray-900 font-semibold flex items-center"
-                  >
-                    <Calendar className="h-5 w-5 mr-2 text-blue-600" />
-                    Date de la séance
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      id="create-date"
-                      type="date"
-                      autoComplete="off"
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      className="h-12 text-base border-2 border-blue-200/50 focus:border-blue-500 rounded-xl px-4 transition-all duration-300 bg-gray-50/50 backdrop-blur-sm hover:bg-white/80 shadow-sm"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    control={createForm.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="create-date" className="text-gray-900 font-semibold flex items-center">
+                          <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+                          Date de la séance
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            id="create-date"
+                            type="date"
+                            autoComplete="off"
+                            value={field.value ?? ""}
+                            onChange={field.onChange}
+                            className="h-12 text-base border-2 border-blue-200/50 focus:border-blue-500 rounded-xl px-4 transition-all duration-300 bg-gray-50/50 backdrop-blur-sm hover:bg-white/80 shadow-sm"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={createForm.control}
@@ -1792,10 +1489,7 @@ export default function AdminSeancesPage() {
                     name="heureFin"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="create-heure-fin"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="create-heure-fin" className="text-gray-900 font-semibold flex items-center">
                           <Clock className="h-5 w-5 mr-2 text-red-600" />
                           Heure de fin (HH:MM)
                         </FormLabel>
@@ -1818,17 +1512,11 @@ export default function AdminSeancesPage() {
                     name="anneeScolaire"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="create-annee"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="create-annee" className="text-gray-900 font-semibold flex items-center">
                           <Calendar className="h-5 w-5 mr-2 text-teal-600" />
                           Année Scolaire
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger
                               id="create-annee"
@@ -1840,11 +1528,7 @@ export default function AdminSeancesPage() {
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
                             {anneeScolaireOptions.map((year) => (
-                              <SelectItem
-                                key={year}
-                                value={year}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={year} value={year} className="rounded-lg cursor-pointer">
                                 {year}
                               </SelectItem>
                             ))}
@@ -1860,17 +1544,11 @@ export default function AdminSeancesPage() {
                     name="semestre"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="create-semestre"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="create-semestre" className="text-gray-900 font-semibold flex items-center">
                           <Clock className="h-5 w-5 mr-2 text-pink-600" />
                           Semestre (Optionnel)
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value || "none"}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value || "none"}>
                           <FormControl>
                             <SelectTrigger
                               id="create-semestre"
@@ -1881,18 +1559,11 @@ export default function AdminSeancesPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
-                            <SelectItem
-                              value="none"
-                              className="rounded-lg cursor-pointer"
-                            >
+                            <SelectItem value="none" className="rounded-lg cursor-pointer">
                               Aucun
                             </SelectItem>
                             {semestreOptions.map((sem) => (
-                              <SelectItem
-                                key={sem}
-                                value={sem}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={sem} value={sem} className="rounded-lg cursor-pointer">
                                 {sem}
                               </SelectItem>
                             ))}
@@ -1905,10 +1576,7 @@ export default function AdminSeancesPage() {
                 </div>
 
                 <DialogFooter className="mt-8 flex justify-end gap-4">
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Button
                       variant="outline"
                       onClick={() => setIsCreateModalOpen(false)}
@@ -1918,10 +1586,7 @@ export default function AdminSeancesPage() {
                       Annuler
                     </Button>
                   </motion.div>
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Button
                       type="submit"
                       disabled={submitLoading}
@@ -1961,9 +1626,7 @@ export default function AdminSeancesPage() {
                 <Edit className="h-8 w-8 text-white" />
               </motion.div>
               <div>
-                <DialogTitle className="text-3xl font-bold">
-                  Modifier la séance
-                </DialogTitle>
+                <DialogTitle className="text-3xl font-bold">Modifier la séance</DialogTitle>
                 <DialogDescription className="text-orange-100 text-lg mt-2">
                   Mettez à jour les informations de la séance sélectionnée.
                 </DialogDescription>
@@ -1973,27 +1636,18 @@ export default function AdminSeancesPage() {
 
           <div className="p-8">
             <Form {...editForm}>
-              <form
-                onSubmit={editForm.handleSubmit(onEditSubmit)}
-                className="space-y-6"
-              >
+              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={editForm.control}
                     name="niveauId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="edit-niveau"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="edit-niveau" className="text-gray-900 font-semibold flex items-center">
                           <GraduationCap className="h-5 w-5 mr-2 text-blue-600" />
                           Niveau
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger
                               id="edit-niveau"
@@ -2005,11 +1659,7 @@ export default function AdminSeancesPage() {
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
                             {niveauxOptions.map((niv) => (
-                              <SelectItem
-                                key={niv.id}
-                                value={niv.id}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={niv.id} value={niv.id} className="rounded-lg cursor-pointer">
                                 {niv.nom} ({niv.departement.nom})
                               </SelectItem>
                             ))}
@@ -2025,18 +1675,11 @@ export default function AdminSeancesPage() {
                     name="enseignantId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="edit-enseignant"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="edit-enseignant" className="text-gray-900 font-semibold flex items-center">
                           <User className="h-5 w-5 mr-2 text-green-600" />
                           Enseignant
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          disabled={!watchedMatiereIdEdit}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!watchedMatiereIdEdit}>
                           <FormControl>
                             <SelectTrigger
                               id="edit-enseignant"
@@ -2048,11 +1691,7 @@ export default function AdminSeancesPage() {
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
                             {filteredEnseignantsForForm.map((ens) => (
-                              <SelectItem
-                                key={ens.id}
-                                value={ens.id}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={ens.id} value={ens.id} className="rounded-lg cursor-pointer">
                                 {ens.nom}
                               </SelectItem>
                             ))}
@@ -2068,18 +1707,11 @@ export default function AdminSeancesPage() {
                     name="matiereId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="edit-matiere"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="edit-matiere" className="text-gray-900 font-semibold flex items-center">
                           <BookOpen className="h-5 w-5 mr-2 text-purple-600" />
                           Matière
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          disabled={!watchedNiveauIdEdit}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!watchedNiveauIdEdit}>
                           <FormControl>
                             <SelectTrigger
                               id="edit-matiere"
@@ -2091,11 +1723,7 @@ export default function AdminSeancesPage() {
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
                             {filteredMatieresForForm.map((mat) => (
-                              <SelectItem
-                                key={mat.id}
-                                value={mat.id}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={mat.id} value={mat.id} className="rounded-lg cursor-pointer">
                                 {mat.nom} ({mat.niveau.nom})
                               </SelectItem>
                             ))}
@@ -2111,17 +1739,11 @@ export default function AdminSeancesPage() {
                     name="salleId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="edit-salle"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="edit-salle" className="text-gray-900 font-semibold flex items-center">
                           <MapPin className="h-5 w-5 mr-2 text-orange-600" />
                           Salle
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger
                               id="edit-salle"
@@ -2133,11 +1755,7 @@ export default function AdminSeancesPage() {
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
                             {sallesOptions.map((salle) => (
-                              <SelectItem
-                                key={salle.id}
-                                value={salle.id}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={salle.id} value={salle.id} className="rounded-lg cursor-pointer">
                                 {salle.nom} (Capacité: {salle.capacite})
                               </SelectItem>
                             ))}
@@ -2149,41 +1767,35 @@ export default function AdminSeancesPage() {
                   />
 
                   <FormField
-              control={editForm.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel
-                    htmlFor="edit-date"
-                    className="text-gray-900 font-semibold flex items-center"
-                  >
-                    <Calendar className="h-5 w-5 mr-2 text-blue-600" />
-                    Date de la séance
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      id="edit-date"
-                      type="date"
-                      autoComplete="off"
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      className="h-12 text-base border-2 border-blue-200/50 focus:border-blue-500 rounded-xl px-4 transition-all duration-300 bg-gray-50/50 backdrop-blur-sm hover:bg-white/80 shadow-sm"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    control={editForm.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="edit-date" className="text-gray-900 font-semibold flex items-center">
+                          <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+                          Date de la séance
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            id="edit-date"
+                            type="date"
+                            autoComplete="off"
+                            value={field.value ?? ""}
+                            onChange={field.onChange}
+                            className="h-12 text-base border-2 border-blue-200/50 focus:border-blue-500 rounded-xl px-4 transition-all duration-300 bg-gray-50/50 backdrop-blur-sm hover:bg-white/80 shadow-sm"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={editForm.control}
                     name="heureDebut"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="edit-heure-debut"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="edit-heure-debut" className="text-gray-900 font-semibold flex items-center">
                           <Clock className="h-5 w-5 mr-2 text-blue-600" />
                           Heure de début (HH:MM)
                         </FormLabel>
@@ -2206,10 +1818,7 @@ export default function AdminSeancesPage() {
                     name="heureFin"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="edit-heure-fin"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="edit-heure-fin" className="text-gray-900 font-semibold flex items-center">
                           <Clock className="h-5 w-5 mr-2 text-red-600" />
                           Heure de fin (HH:MM)
                         </FormLabel>
@@ -2232,17 +1841,11 @@ export default function AdminSeancesPage() {
                     name="anneeScolaire"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="edit-annee"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="edit-annee" className="text-gray-900 font-semibold flex items-center">
                           <Calendar className="h-5 w-5 mr-2 text-teal-600" />
                           Année Scolaire
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger
                               id="edit-annee"
@@ -2254,11 +1857,7 @@ export default function AdminSeancesPage() {
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
                             {anneeScolaireOptions.map((year) => (
-                              <SelectItem
-                                key={year}
-                                value={year}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={year} value={year} className="rounded-lg cursor-pointer">
                                 {year}
                               </SelectItem>
                             ))}
@@ -2274,17 +1873,11 @@ export default function AdminSeancesPage() {
                     name="semestre"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel
-                          htmlFor="edit-semestre"
-                          className="text-gray-900 font-semibold flex items-center"
-                        >
+                        <FormLabel htmlFor="edit-semestre" className="text-gray-900 font-semibold flex items-center">
                           <Clock className="h-5 w-5 mr-2 text-pink-600" />
                           Semestre (Optionnel)
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value || "none"}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value || "none"}>
                           <FormControl>
                             <SelectTrigger
                               id="edit-semestre"
@@ -2295,18 +1888,11 @@ export default function AdminSeancesPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
-                            <SelectItem
-                              value="none"
-                              className="rounded-lg cursor-pointer"
-                            >
+                            <SelectItem value="none" className="rounded-lg cursor-pointer">
                               Aucun
                             </SelectItem>
                             {semestreOptions.map((sem) => (
-                              <SelectItem
-                                key={sem}
-                                value={sem}
-                                className="rounded-lg cursor-pointer"
-                              >
+                              <SelectItem key={sem} value={sem} className="rounded-lg cursor-pointer">
                                 {sem}
                               </SelectItem>
                             ))}
@@ -2319,10 +1905,7 @@ export default function AdminSeancesPage() {
                 </div>
 
                 <DialogFooter className="mt-8 flex justify-end gap-4">
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Button
                       variant="outline"
                       onClick={() => setIsEditModalOpen(false)}
@@ -2332,10 +1915,7 @@ export default function AdminSeancesPage() {
                       Annuler
                     </Button>
                   </motion.div>
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Button
                       type="submit"
                       disabled={submitLoading}
@@ -2375,9 +1955,7 @@ export default function AdminSeancesPage() {
                 <Trash2 className="h-8 w-8 text-white" />
               </motion.div>
               <div>
-                <DialogTitle className="text-3xl font-bold">
-                  Confirmer la suppression
-                </DialogTitle>
+                <DialogTitle className="text-3xl font-bold">Confirmer la suppression</DialogTitle>
                 <DialogDescription className="text-red-100 text-lg mt-2">
                   Cette action est irréversible
                 </DialogDescription>
@@ -2386,47 +1964,31 @@ export default function AdminSeancesPage() {
           </div>
 
           <div className="p-8">
-      <div className="text-center mb-8">
-        <div className="mb-6">
-          <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="h-10 w-10 text-red-600" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
-            Êtes-vous sûr ?
-          </h3>
-          <p className="text-gray-600">
-            Êtes-vous sûr de vouloir supprimer la séance de{" "}
-            <span className="font-semibold text-gray-900">
-              {selectedSeance?.matiere.nom}
-            </span>{" "}
-            avec{" "}
-            <span className="font-semibold text-gray-900">
-              {selectedSeance?.enseignant.utilisateur.nom}
-            </span>{" "}
-            le{" "}
-            <span className="font-semibold text-gray-900">
-              {selectedSeance
-                ? formatDate(selectedSeance.date)
-                : ""}
-            </span>{" "}
-            de{" "}
-            <span className="font-semibold text-gray-900">
-              {selectedSeance
-                ? formatTime(selectedSeance.heureDebut)
-                : ""}{" "}
-              à{" "}
-              {selectedSeance ? formatTime(selectedSeance.heureFin) : ""}
-            </span>{" "}
-            ? Cette action est irréversible.
-          </p>
-        </div>
-      </div>
+            <div className="text-center mb-8">
+              <div className="mb-6">
+                <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="h-10 w-10 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Êtes-vous sûr ?</h3>
+                <p className="text-gray-600">
+                  Êtes-vous sûr de vouloir supprimer la séance de{" "}
+                  <span className="font-semibold text-gray-900">{selectedSeance?.matiere.nom}</span> avec{" "}
+                  <span className="font-semibold text-gray-900">{selectedSeance?.enseignant.utilisateur.nom}</span> le{" "}
+                  <span className="font-semibold text-gray-900">
+                    {selectedSeance ? formatDate(selectedSeance.date) : ""}
+                  </span>{" "}
+                  de{" "}
+                  <span className="font-semibold text-gray-900">
+                    {selectedSeance ? formatTime(selectedSeance.heureDebut) : ""} à{" "}
+                    {selectedSeance ? formatTime(selectedSeance.heureFin) : ""}
+                  </span>{" "}
+                  ? Cette action est irréversible.
+                </p>
+              </div>
+            </div>
 
             <DialogFooter className="flex justify-center gap-4">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button
                   variant="outline"
                   onClick={() => setIsDeleteConfirmOpen(false)}
@@ -2436,10 +1998,7 @@ export default function AdminSeancesPage() {
                   Annuler
                 </Button>
               </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button
                   onClick={onDeleteConfirm}
                   disabled={submitLoading}
@@ -2463,5 +2022,5 @@ export default function AdminSeancesPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

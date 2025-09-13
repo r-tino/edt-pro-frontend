@@ -1,4 +1,4 @@
-//app/(app)/layout.tsx
+//app/(app)/admin/layout.tsx
 
 "use client" // Ce layout est un Client Component.
 
@@ -42,11 +42,11 @@ export default function AuthenticatedLayout({
     if (path.includes("/admin/niveaux")) return "niveaux"
     if (path.includes("admin/matieres")) return "matieres"
     if (path.includes("/admin/salles")) return "salles"
-    if (path.includes("/admin/seances")) return "seances";
-    if (path.includes("/admin/users")) return "users";
-    if (path.includes("/emploi-du-temps")) return "emploi-du-temps";
+    if (path.includes("/admin/seances")) return "seances"
+    if (path.includes("/admin/users")) return "users"
+    if (path.includes("/emploi-du-temps")) return "emploi-du-temps"
     // NOUVEAUTÉ : Ajout de la page de notes pour les enseignants
-    if (path.includes("/enseignant/grades")) return "Notes";
+    if (path.includes("/enseignant/grades")) return "Notes"
     // Ajoutez d'autres conditions ici pour les pages "enseignant" et "etudiant"
     return "dashboard" // Par défaut pour le dashboard
   }
@@ -62,8 +62,8 @@ export default function AuthenticatedLayout({
     }
 
     try {
-      const parsedUser: UserInfo = JSON.parse(storedUser);
-      setUser(parsedUser);
+      const parsedUser: UserInfo = JSON.parse(storedUser)
+      setUser(parsedUser)
 
       // CORRECTION : Les chemins d'accès pour les admins sont plus spécifiques
       const adminOnlyPaths = [
@@ -73,37 +73,34 @@ export default function AuthenticatedLayout({
         "/admin/salles",
         "/admin/seances",
         "/admin/users",
-      ];
+      ]
       // NOUVEAUTÉ : Définition des chemins d'accès spécifiques aux enseignants
-      const enseignantOnlyPaths = [
-        "/enseignant/grades",
-      ];
+      const enseignantOnlyPaths = ["/enseignant/grades"]
 
       // NOUVEAUTÉ : Vérification si l'utilisateur essaie d'accéder à une page d'admin ou d'enseignant
-      const isTryingToAccessAdminPage = adminOnlyPaths.some((path) => pathname.startsWith(path));
-      const isTryingToAccessEnseignantPage = enseignantOnlyPaths.some((path) => pathname.startsWith(path));
+      const isTryingToAccessAdminPage = adminOnlyPaths.some((path) => pathname.startsWith(path))
+      const isTryingToAccessEnseignantPage = enseignantOnlyPaths.some((path) => pathname.startsWith(path))
 
       // NOUVEAUTÉ : Logique de redirection si le rôle ne correspond pas
       if (parsedUser.role !== Role.ADMIN && isTryingToAccessAdminPage) {
-        router.push("/dashboard");
-        console.warn("Accès non autorisé : rôle non-ADMIN pour une page d'administration.");
-        return;
+        router.push("/dashboard")
+        console.warn("Accès non autorisé : rôle non-ADMIN pour une page d'administration.")
+        return
       }
       if (parsedUser.role !== Role.ENSEIGNANT && isTryingToAccessEnseignantPage) {
-        router.push("/dashboard");
-        console.warn("Accès non autorisé : rôle non-ENSEIGNANT pour une page d'enseignant.");
-        return;
+        router.push("/dashboard")
+        console.warn("Accès non autorisé : rôle non-ENSEIGNANT pour une page d'enseignant.")
+        return
       }
-      
     } catch (e) {
-      console.error("Erreur lors du parsing des informations utilisateur dans le layout:", e);
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("user");
-      router.push("/login");
+      console.error("Erreur lors du parsing des informations utilisateur dans le layout:", e)
+      localStorage.removeItem("accessToken")
+      localStorage.removeItem("user")
+      router.push("/login")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [router, pathname]); // Dépend de pathname pour les redirections basées sur le chemin
+  }, [router, pathname]) // Dépend de pathname pour les redirections basées sur le chemin
 
   // Fonction pour afficher le modal de confirmation de déconnexion
   const handleLogoutClick = () => {
@@ -238,5 +235,5 @@ export default function AuthenticatedLayout({
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
     </div>
-  );
+  )
 }
