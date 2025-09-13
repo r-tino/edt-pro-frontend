@@ -284,7 +284,10 @@ export function AppHeader({ user, onLogout, currentPage }: AppHeaderProps) {
             >
               Annuler
             </Button>
-            <Button onClick={handleConfirmLogout} className="flex-1 bg-red-600 hover:bg-red-700 text-white cursor-pointer">
+            <Button
+              onClick={handleConfirmLogout}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+            >
               <LogOut className="h-4 w-4 mr-2" />
               Se déconnecter
             </Button>
