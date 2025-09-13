@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import { useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
@@ -26,7 +27,6 @@ import {
   AlertTriangle,
 } from "lucide-react"
 
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
 
 const schema = z
@@ -41,7 +41,8 @@ const schema = z
 
 type ResetValues = z.infer<typeof schema>
 
-export default function ResetPasswordPage() {
+// Composant qui utilise useSearchParams
+function ResetPasswordContent() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -573,5 +574,25 @@ export default function ResetPasswordPage() {
         </div>
       </footer>
     </div>
+  )
+}
+
+// Composant principal avec Suspense
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 flex items-center justify-center">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="p-4 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg">
+              <Loader2 className="h-8 w-8 text-white animate-spin" />
+            </div>
+            <p className="text-gray-600 font-medium">Chargement de la page...</p>
+          </div>
+        </div>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   )
 }
