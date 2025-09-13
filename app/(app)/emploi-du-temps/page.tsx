@@ -30,6 +30,9 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+
 enum Role {
   ADMIN = "ADMIN",
   ENSEIGNANT = "ENSEIGNANT",
@@ -463,9 +466,9 @@ export default function EmploiDuTempsPage() {
 
       try {
         const [niveauxRes, matieresRes, sallesRes] = await Promise.all([
-          fetch("http://localhost:3000/api/niveaux", { headers }),
-          fetch("http://localhost:3000/api/matieres", { headers }),
-          fetch("http://localhost:3000/api/salles", { headers }),
+          fetch(`${API_URL}/api/niveaux`, { headers }),
+          fetch(`${API_URL}/api/matieres`, { headers }),
+          fetch(`${API_URL}/api/salles`, { headers }),
         ])
 
         if (niveauxRes.ok) {
@@ -517,7 +520,7 @@ export default function EmploiDuTempsPage() {
       if (value) queryParams.append(key, value)
     })
 
-    const apiUrl = `http://localhost:3000/api/seances?${queryParams.toString()}`
+    const apiUrl = `${API_URL}/api/seances?${queryParams.toString()}`
 
     try {
       const response = await fetch(apiUrl, {

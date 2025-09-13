@@ -51,6 +51,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+
 // Enum pour les rôles (doit correspondre à Prisma)
 enum Role {
   ADMIN = "ADMIN",
@@ -179,8 +182,8 @@ export default function RegisterPage() {
     async function fetchData() {
       setIsDataLoading(true);
       try {
-        const niveauxRes = await fetch("http://localhost:3000/api/niveaux");
-        const matieresRes = await fetch("http://localhost:3000/api/matieres");
+        const niveauxRes = await fetch(`${API_URL}/api/niveaux`);
+        const matieresRes = await fetch(`${API_URL}/api/matieres`);
 
         if (!niveauxRes.ok) {
           const errorData = await niveauxRes.json();
@@ -290,7 +293,7 @@ export default function RegisterPage() {
       delete payload.enseignantProfile;
     }
 
-    const response = await fetch("http://localhost:3000/api/auth/register", {
+    const response = await fetch(`${API_URL}/api/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

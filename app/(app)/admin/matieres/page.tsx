@@ -54,6 +54,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 // Importation de Sonner pour les notifications
 import { Toaster, toast } from "sonner"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+
 // Interfaces pour correspondre à la structure des données du backend
 enum Role {
   ADMIN = "ADMIN",
@@ -219,7 +221,7 @@ export default function MatieresPage() {
   // Fonctions pour récupérer les niveaux et les matières
   const fetchNiveaux = useCallback(async (accessToken: string) => {
     try {
-      const response = await fetch("http://localhost:3000/api/niveaux", {
+      const response = await fetch(`${API_URL}/api/niveaux`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -257,7 +259,7 @@ export default function MatieresPage() {
     await fetchNiveaux(accessToken)
 
     try {
-      const response = await fetch("http://localhost:3000/api/matieres", {
+      const response = await fetch(`${API_URL}/api/matieres`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -338,7 +340,7 @@ export default function MatieresPage() {
     setIsSubmitting(true)
     const accessToken = localStorage.getItem("accessToken")
     const method = currentMatiere ? "PATCH" : "POST"
-    const url = currentMatiere ? `http://localhost:3000/api/matieres/${currentMatiere.id}` : "http://localhost:3000/api/matieres"
+    const url = currentMatiere ? `${API_URL}/api/matieres/${currentMatiere.id}` : `${API_URL}/api/matieres`
 
     try {
       const response = await fetch(url, {
@@ -378,7 +380,7 @@ export default function MatieresPage() {
     const accessToken = localStorage.getItem("accessToken")
 
     try {
-      const response = await fetch(`http://localhost:3000/api/matieres/${matiereToDeleteId}`, {
+      const response = await fetch(`${API_URL}/api/matieres/${matiereToDeleteId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,

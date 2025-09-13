@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+
 // Définition du schéma de validation avec Zod
 const formSchema = z.object({
   email: z.string().min(1, { message: "L'email est requis." }).email({ message: "L'email n'est pas valide." }),
@@ -43,7 +45,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

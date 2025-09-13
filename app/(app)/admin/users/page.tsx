@@ -55,6 +55,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group" // Pour
 // Importation de Sonner pour les notifications
 import { Toaster, toast } from "sonner"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+
 // Interfaces pour correspondre à la structure des données du backend
 enum Role {
   ADMIN = "ADMIN",
@@ -244,7 +246,7 @@ export default function UsersPage() {
   // Fonctions pour récupérer les données nécessaires
   const fetchNiveaux = useCallback(async (accessToken: string) => {
     try {
-      const response = await fetch("http://localhost:3000/api/niveaux", {
+      const response = await fetch(`${API_URL}/api/niveaux`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -265,7 +267,7 @@ export default function UsersPage() {
 
   const fetchMatieres = useCallback(async (accessToken: string) => {
     try {
-      const response = await fetch("http://localhost:3000/api/matieres", {
+      const response = await fetch(`${API_URL}/api/matieres`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -304,7 +306,7 @@ export default function UsersPage() {
     await Promise.all([fetchNiveaux(accessToken), fetchMatieres(accessToken)])
 
     try {
-      const response = await fetch("http://localhost:3000/api/utilisateurs", {
+      const response = await fetch(`${API_URL}/api/utilisateurs`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -462,8 +464,8 @@ export default function UsersPage() {
     const accessToken = localStorage.getItem("accessToken")
     const method = currentUser ? "PATCH" : "POST"
     const url = currentUser
-      ? `http://localhost:3000/api/utilisateurs/${currentUser.id}`
-      : "http://localhost:3000/api/auth/register"
+      ? `${API_URL}/api/utilisateurs/${currentUser.id}`
+      : `${API_URL}/api/auth/register`
 
     const payload: any = {
       nom: newUserName,
@@ -540,7 +542,7 @@ export default function UsersPage() {
     const accessToken = localStorage.getItem("accessToken")
 
     try {
-      const response = await fetch(`http://localhost:3000/api/utilisateurs/${userToDeleteId}`, {
+      const response = await fetch(`${API_URL}/api/utilisateurs/${userToDeleteId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,

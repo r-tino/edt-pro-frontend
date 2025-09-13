@@ -56,6 +56,8 @@ import {
 // Importation de Sonner pour les notifications
 import { Toaster, toast } from "sonner"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+
 // Interfaces pour correspondre à la structure des données du backend
 enum Role {
   ADMIN = "ADMIN",
@@ -221,7 +223,7 @@ export default function DepartementsPage() {
       // Pour inclure les comptes (_count) des relations, votre API NestJS doit utiliser
       // Prisma avec l'option `_count: { select: { niveaux: true, enseignants: true } }`
       // dans la requête FIND pour les départements.
-      const response = await fetch("http://localhost:3000/api/departements", {
+      const response = await fetch(`${API_URL}/api/departements`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -293,8 +295,8 @@ export default function DepartementsPage() {
     const accessToken = localStorage.getItem("accessToken")
     const method = currentDepartement ? "PATCH" : "POST"
     const url = currentDepartement
-      ? `http://localhost:3000/api/departements/${currentDepartement.id}`
-      : "http://localhost:3000/api/departements"
+      ? `${API_URL}/api/departements${currentDepartement.id}`
+      : `${API_URL}/api/departements`
 
     try {
       const response = await fetch(url, {
@@ -338,7 +340,7 @@ export default function DepartementsPage() {
     const accessToken = localStorage.getItem("accessToken")
 
     try {
-      const response = await fetch(`http://localhost:3000/api/departements/${departementToDeleteId}`, {
+      const response = await fetch(`${API_URL}/api/departements/${departementToDeleteId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,

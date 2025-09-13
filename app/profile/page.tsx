@@ -29,7 +29,7 @@ import {
   X,
 } from "lucide-react"
 
-const API_BASE = "http://localhost:3000"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
 
 enum Role {
   ADMIN = "ADMIN",
@@ -139,7 +139,7 @@ export default function ProfilePage() {
   const fetchNiveaux = useCallback(
     async (accessToken: string) => {
       try {
-        const response = await fetch(`${API_BASE}/api/niveaux`, {
+        const response = await fetch(`${API_URL}/api/niveaux`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
@@ -168,7 +168,7 @@ export default function ProfilePage() {
   const fetchMatieres = useCallback(
     async (accessToken: string) => {
       try {
-        const response = await fetch(`${API_BASE}/api/matieres`, {
+        const response = await fetch(`${API_URL}/api/matieres`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
@@ -212,7 +212,7 @@ export default function ProfilePage() {
     await Promise.all([fetchNiveaux(accessToken), fetchMatieres(accessToken)])
 
     try {
-      const response = await fetch(`${API_BASE}/api/utilisateurs/${user.id}`, {
+      const response = await fetch(`${API_URL}/api/utilisateurs/${user.id}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -361,7 +361,7 @@ export default function ProfilePage() {
         }
       }
 
-      const response = await fetch(`${API_BASE}/api/utilisateurs/${user.id}`, {
+      const response = await fetch(`${API_URL}/api/utilisateurs/${user.id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -457,11 +457,11 @@ export default function ProfilePage() {
     // Si l'URL commence par uploads/ ou /uploads/, construire l'URL complète
     if (photoUrl.startsWith("uploads/") || photoUrl.startsWith("/uploads/")) {
       const cleanPath = photoUrl.startsWith("/") ? photoUrl.slice(1) : photoUrl
-      return `${API_BASE}/${cleanPath}`
+      return `${API_URL}/${cleanPath}`
     }
 
     // Par défaut, construire l'URL complète
-    return `${API_BASE}/${photoUrl}`
+    return `${API_URL}/${photoUrl}`
   }
 
   if (loading) {

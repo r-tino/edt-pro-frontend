@@ -52,6 +52,8 @@ import {
 // Importation de Sonner pour les notifications
 import { Toaster, toast } from "sonner"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+
 // Interfaces pour correspondre à la structure des données du backend
 enum Role {
   ADMIN = "ADMIN",
@@ -220,7 +222,7 @@ export default function SallesPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/salles", {
+      const response = await fetch(`${API_URL}/api/salles`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -308,7 +310,7 @@ export default function SallesPage() {
     setIsSubmitting(true)
     const accessToken = localStorage.getItem("accessToken")
     const method = currentSalle ? "PATCH" : "POST"
-    const url = currentSalle ? `http://localhost:3000/api/salles/${currentSalle.id}` : "http://localhost:3000/api/salles"
+    const url = currentSalle ? `${API_URL}/api/salles/${currentSalle.id}` : `${API_URL}/api/salles`
 
     try {
       const response = await fetch(url, {
@@ -352,7 +354,7 @@ export default function SallesPage() {
     const accessToken = localStorage.getItem("accessToken")
 
     try {
-      const response = await fetch(`http://localhost:3000/api/salles/${salleToDeleteId}`, {
+      const response = await fetch(`${API_URL}/api/salles/${salleToDeleteId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,

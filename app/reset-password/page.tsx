@@ -26,6 +26,9 @@ import {
   AlertTriangle,
 } from "lucide-react"
 
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+
 const schema = z
   .object({
     newPassword: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères."),
@@ -60,7 +63,7 @@ export default function ResetPasswordPage() {
     setSuccess(null)
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/reset-password", {
+      const res = await fetch(`${API_URL}/api/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, token, newPassword: values.newPassword }),

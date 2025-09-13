@@ -65,6 +65,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+
 
 // ------------------------------------------------------
 // AJOUT : Fonction de détection de conflit en haut du fichier
@@ -440,7 +442,7 @@ export default function AdminSeancesPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/seances?${queryParams.toString()}`,
+       `${API_URL}/api/seances?${queryParams.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -703,7 +705,7 @@ export default function AdminSeancesPage() {
         semestre: values.semestre === "" ? null : values.semestre,
       };
 
-      const response = await fetch("http://localhost:3000/api/seances", {
+      const response = await fetch(`${API_URL}/api/seances`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -774,7 +776,7 @@ export default function AdminSeancesPage() {
       };
 
       const response = await fetch(
-        `http://localhost:3000/api/seances/${selectedSeance.id}`,
+        `${API_URL}/api/seances/${selectedSeance.id}`,
         {
           method: "PATCH",
           headers: {
@@ -820,7 +822,7 @@ export default function AdminSeancesPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/seances/${selectedSeance.id}`,
+        `${API_URL}/api/seances/${selectedSeance.id}`,
         {
           method: "DELETE",
           headers: {

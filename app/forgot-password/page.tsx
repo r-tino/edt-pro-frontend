@@ -25,6 +25,9 @@ import {
   Sparkles,
 } from "lucide-react"
 
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+
 const schema = z.object({
   email: z.string().min(1, "L'email est requis.").email("L'email n'est pas valide."),
 })
@@ -48,7 +51,7 @@ export default function ForgotPasswordPage() {
     setSuccess(null)
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/request-password-reset", {
+      const res = await fetch(`${API_URL}/api/auth/request-password-reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
