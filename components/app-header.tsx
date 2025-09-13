@@ -254,7 +254,7 @@ export function AppHeader({ user, onLogout, currentPage }: AppHeaderProps) {
       </motion.header>
 
       {/* Boîte de dialogue de confirmation de déconnexion */}
-      {/* <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+      <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3 text-xl">
@@ -290,7 +290,7 @@ export function AppHeader({ user, onLogout, currentPage }: AppHeaderProps) {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
     </>
   )
 }
