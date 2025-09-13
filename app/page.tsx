@@ -1,3 +1,4 @@
+// app/page.tsx
 "use client"
 
 import { Button } from "@/components/ui/button"
@@ -314,7 +315,7 @@ export default function LandingPage() {
             </motion.p>
             <motion.div variants={itemVariants}>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                 <Link href="/login">
+                <Link href="/login">
                   <Button
                     size="lg"
                     className="bg-white text-blue-700 hover:bg-gray-50 px-12 py-5 text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl border-2 border-white/20 hover:border-white/40 transform hover:scale-105 cursor-pointer"

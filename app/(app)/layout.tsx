@@ -1,3 +1,5 @@
+//app/(app)/layout.tsx
+
 "use client" // Ce layout est un Client Component.
 
 import type React from "react"
